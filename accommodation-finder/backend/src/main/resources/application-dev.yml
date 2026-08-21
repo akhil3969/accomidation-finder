@@ -1,0 +1,25 @@
+# Local development against a real MySQL 8 instance.
+# Run with:  mvn spring-boot:run -Dspring-boot.run.profiles=dev
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:accommodation_finder}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    open-in-view: false
+    show-sql: true
+
+app:
+  seed:
+    enabled: true
+
+logging:
+  level:
+    com.accommodationfinder: DEBUG

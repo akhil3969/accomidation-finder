@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------
+# Accommodation Finder - default configuration
+# Active profile is chosen with:  -Dspring-boot.run.profiles=demo|dev|prod
+# ---------------------------------------------------------------
+spring:
+  application:
+    name: accommodation-finder
+  profiles:
+    default: demo
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+
+app:
+  jwt:
+    # Override in production!  Must be at least 32 characters (256 bits).
+    secret: ${JWT_SECRET:change-me-in-production-accommodation-finder-secret-key-2026}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}       # 24 h
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}  # 7 days
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+  seed:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  level:
+    com.accommodationfinder: INFO

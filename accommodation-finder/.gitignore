@@ -1,0 +1,38 @@
+# --- Java / Maven ---
+target/
+*.class
+*.jar
+*.war
+.mvn/
+mvnw
+mvnw.cmd
+
+# --- Node ---
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-error.log*
+
+# --- Environment ---
+.env
+.env.local
+application-local.properties
+application-local.yml
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
+logs/

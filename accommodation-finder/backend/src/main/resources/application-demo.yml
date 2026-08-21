@@ -1,0 +1,24 @@
+# Zero-setup profile: in-memory H2 database, auto-seeded with demo data.
+# Run with:  mvn spring-boot:run -Dspring-boot.run.profiles=demo
+spring:
+  datasource:
+    url: jdbc:h2:mem:accommodation;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ''
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  seed:
+    enabled: true

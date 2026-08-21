@@ -1,0 +1,73 @@
+# ---------------------------------------------------------------------------
+#  Accommodation Finder - full stack
+#
+#  Quick start:
+#     docker compose up --build
+#     frontend  http://localhost:3000
+#     backend   http://localhost:8080  (Swagger at /swagger-ui.html)
+#     adminer   http://localhost:8081  (server: mysql, user: root, pass: root)
+#
+#  Database only (run the apps from your IDE):
+#     docker compose up mysql adminer
+# ---------------------------------------------------------------------------
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: accomfinder-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: accommodation_finder
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Anything in this folder runs once, on first boot of an empty volume.
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:4
+    container_name: accomfinder-adminer
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+
+  backend:
+    build:
+      context: ./backend
+    container_name: accomfinder-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: accommodation_finder
+      DB_USER: root
+      DB_PASSWORD: root
+      JWT_SECRET: change-me-in-production-accommodation-finder-secret-key-2026
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: accomfinder-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
