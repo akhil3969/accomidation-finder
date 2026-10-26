@@ -50,4 +50,21 @@ class JwtServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("at least 32 characters");
     }
+
+    @Test
+    void refusesToStartWithASecretThatWasPublishedInTheRepository() {
+        JwtProperties leaked = new JwtProperties(
+                "change-me-in-production-accommodation-finder-secret-key-2026", 1000L, 2000L);
+        assertThatThrownBy(() -> new JwtService(leaked))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("published in the repository");
+    }
+
+    @Test
+    void refusesToStartWithNoSecret() {
+        JwtProperties missing = new JwtProperties("", 1000L, 2000L);
+        assertThatThrownBy(() -> new JwtService(missing))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must be set");
+    }
 }

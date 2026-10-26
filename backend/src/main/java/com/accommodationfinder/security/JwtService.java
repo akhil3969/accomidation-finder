@@ -15,12 +15,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /** Issues and validates the stateless HS256 access tokens used by the API and the WebSocket handshake. */
 @Service
 public class JwtService {
 
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
+
+    /**
+     * Secrets that were once committed to the public repository. Anyone can sign
+     * tokens with them, so they are refused in every profile.
+     */
+    static final Set<String> LEAKED_SECRETS = Set.of(
+            "change-me-in-production-accommodation-finder-secret-key-2026");
 
     private final JwtProperties properties;
     private final SecretKey signingKey;
@@ -33,6 +41,11 @@ public class JwtService {
     private static SecretKey buildKey(String secret) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalStateException("app.jwt.secret must be set (see backend/.env.example)");
+        }
+        if (LEAKED_SECRETS.contains(secret.trim())) {
+            throw new IllegalStateException(
+                    "app.jwt.secret is a value that was published in the repository - "
+                            + "generate a new one with: openssl rand -base64 48");
         }
 
         byte[] keyBytes;

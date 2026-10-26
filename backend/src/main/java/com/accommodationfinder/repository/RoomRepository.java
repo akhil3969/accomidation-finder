@@ -1,11 +1,15 @@
 package com.accommodationfinder.repository;
 
 import com.accommodationfinder.model.Room;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +23,17 @@ public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificat
     /** Eagerly loads the landlord so detail responses do not lazy-load outside the session. */
     @Query("select r from Room r join fetch r.landlord where r.id = :id")
     Optional<Room> findByIdWithLandlord(@Param("id") Long id);
+
+    /**
+     * Same as {@link #findByIdWithLandlord} but takes a row lock ({@code SELECT ... FOR UPDATE})
+     * held until the surrounding transaction commits. Booking requests for the same room
+     * therefore run their overlap check one at a time instead of both passing it at once.
+     * The timeout turns a stuck lock into a clean 409 rather than a hung request.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "5000"))
+    @Query("select r from Room r join fetch r.landlord where r.id = :id")
+    Optional<Room> findByIdWithLandlordForUpdate(@Param("id") Long id);
 
     /**
      * Admin listing rows carry the landlord's name. Fetching it in the same

@@ -63,7 +63,7 @@ class BookingServiceTest {
         LocalDate checkIn = LocalDate.now().plusDays(10);
         LocalDate checkOut = checkIn.plusDays(30);
 
-        when(roomRepository.findByIdWithLandlord(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdWithLandlordForUpdate(10L)).thenReturn(Optional.of(room));
         when(bookingRepository.existsOverlappingBooking(anyLong(), any(), any())).thenReturn(false);
         when(bookingRepository.save(any(Booking.class))).thenAnswer(call -> {
             Booking saved = call.getArgument(0);
@@ -87,7 +87,7 @@ class BookingServiceTest {
     @Test
     void refusesOverlappingDates() {
         LocalDate checkIn = LocalDate.now().plusDays(5);
-        when(roomRepository.findByIdWithLandlord(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdWithLandlordForUpdate(10L)).thenReturn(Optional.of(room));
         when(bookingRepository.existsOverlappingBooking(anyLong(), any(), any())).thenReturn(true);
 
         assertThatThrownBy(() -> bookingService.request(
@@ -99,7 +99,7 @@ class BookingServiceTest {
     @Test
     void refusesCheckOutBeforeCheckIn() {
         LocalDate checkIn = LocalDate.now().plusDays(20);
-        when(roomRepository.findByIdWithLandlord(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdWithLandlordForUpdate(10L)).thenReturn(Optional.of(room));
 
         assertThatThrownBy(() -> bookingService.request(
                 new BookingRequest(10L, checkIn, checkIn.minusDays(1), 1, null), tenant))
@@ -110,7 +110,7 @@ class BookingServiceTest {
     @Test
     void refusesToLetALandlordBookTheirOwnListing() {
         LocalDate checkIn = LocalDate.now().plusDays(3);
-        when(roomRepository.findByIdWithLandlord(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdWithLandlordForUpdate(10L)).thenReturn(Optional.of(room));
 
         assertThatThrownBy(() -> bookingService.request(
                 new BookingRequest(10L, checkIn, checkIn.plusDays(40), 1, null), landlord))
@@ -121,7 +121,7 @@ class BookingServiceTest {
     @Test
     void refusesMoreGuestsThanTheListingAccepts() {
         LocalDate checkIn = LocalDate.now().plusDays(3);
-        when(roomRepository.findByIdWithLandlord(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.findByIdWithLandlordForUpdate(10L)).thenReturn(Optional.of(room));
 
         assertThatThrownBy(() -> bookingService.request(
                 new BookingRequest(10L, checkIn, checkIn.plusDays(40), 5, null), tenant))

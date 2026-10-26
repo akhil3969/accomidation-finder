@@ -35,6 +35,10 @@ public class SecurityConfig {
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
 
+    /** Only the demo profile turns the H2 console on; everywhere else it stays closed. */
+    @Value("${spring.h2.console.enabled:false}")
+    private boolean h2ConsoleEnabled;
+
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           RestAuthenticationEntryPoint authenticationEntryPoint,
                           RestAccessDeniedHandler accessDeniedHandler,
@@ -54,7 +58,15 @@ public class SecurityConfig {
             .exceptionHandling(handling -> handling
                 .authenticationEntryPoint(authenticationEntryPoint)   // 401 - not signed in
                 .accessDeniedHandler(accessDeniedHandler))            // 403 - signed in, not allowed
-            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin())) // H2 console in demo profile
+            // The H2 console renders in frames, so it needs SAMEORIGIN; nothing else does.
+            .headers(headers -> headers.frameOptions(frame -> {
+                if (h2ConsoleEnabled) frame.sameOrigin(); else frame.deny();
+            }))
+            .authorizeHttpRequests(auth -> {
+                if (h2ConsoleEnabled) {
+                    auth.requestMatchers("/h2-console/**").permitAll();
+                }
+            })
             .authorizeHttpRequests(auth -> auth
                 // --- public ---
                 .requestMatchers("/api/auth/me").authenticated()
@@ -70,7 +82,6 @@ public class SecurityConfig {
                 .requestMatchers("/ws/**", "/ws-native/**").permitAll()
                 .requestMatchers("/api/public/**", "/actuator/health").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // --- role gated ---
                 .requestMatchers(HttpMethod.POST, "/api/rooms").hasAnyRole("LANDLORD", "ADMIN")

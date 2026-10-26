@@ -49,6 +49,15 @@ public class Booking {
     @Column(name = "landlord_response", columnDefinition = "TEXT")
     private String landlordResponse;
 
+    /**
+     * Optimistic lock: an UPDATE that was based on a stale copy of this row fails
+     * instead of silently overwriting someone else's change (e.g. a tenant cancelling
+     * while the landlord confirms). Surfaces as a 409 via GlobalExceptionHandler.
+     */
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     @Column(name = "requested_at", nullable = false, updatable = false)
     private LocalDateTime requestedAt;
 
@@ -109,6 +118,8 @@ public class Booking {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public long getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {

@@ -126,6 +126,15 @@ public class Room {
     @Column(name = "flag", length = 80)
     private Set<String> riskFlags = new LinkedHashSet<>();
 
+    /**
+     * Optimistic lock: an UPDATE that was based on a stale copy of this row fails
+     * instead of silently overwriting someone else's change (e.g. a tenant cancelling
+     * while the landlord confirms). Surfaces as a 409 via GlobalExceptionHandler.
+     */
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -262,6 +271,8 @@ public class Room {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public long getVersion() { return version; }
 
     @Override
     public boolean equals(Object o) {

@@ -9,6 +9,19 @@ spring:
       ddl-auto: validate
     open-in-view: false
     show-sql: false
+  h2:
+    console:
+      enabled: false
+
+# Spring's fallback /error page must not echo exception text, stack traces or
+# binding details back to the client - they describe the internals to an attacker.
+# GlobalExceptionHandler already returns its own safe messages for known errors.
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+    include-exception: false
 
 app:
   seed:
@@ -18,3 +31,6 @@ logging:
   level:
     root: WARN
     com.accommodationfinder: INFO
+    # SQL and bound parameters contain names, emails and messages (personal data).
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF

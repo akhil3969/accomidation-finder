@@ -20,5 +20,9 @@ spring:
       path: /h2-console
 
 app:
+  jwt:
+    # Throwaway secret so the demo runs with zero setup. It is public, so
+    # ProductionConfigGuard refuses to start the prod profile with it.
+    secret: ${JWT_SECRET:demo-only-insecure-jwt-secret-do-not-use-in-production}
   seed:
     enabled: true

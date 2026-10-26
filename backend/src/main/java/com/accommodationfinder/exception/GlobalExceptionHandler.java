@@ -5,9 +5,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
@@ -68,10 +70,28 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({MissingServletRequestParameterException.class,
-            MethodArgumentTypeMismatchException.class,
-            HttpMessageNotReadableException.class})
+            MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ApiError> handleMalformed(Exception ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, "Malformed request: " + ex.getMessage(), request);
+    }
+
+    /** Jackson's parse errors name internal classes and fields, so they stay in the log. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleUnreadableBody(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        log.debug("Unreadable request body on {}: {}", request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.BAD_REQUEST, "Malformed request: the body is not valid JSON for this endpoint", request);
+    }
+
+    /** Someone else changed the same row between our read and our write. */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleOptimisticLock(ObjectOptimisticLockingFailureException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "This was changed by someone else just now - reload and try again", request);
+    }
+
+    /** The row lock on a room could not be obtained in time - another booking is in flight. */
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handlePessimisticLock(PessimisticLockingFailureException ex, HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "This listing is busy with another request - please try again", request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

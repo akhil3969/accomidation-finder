@@ -51,7 +51,9 @@ services:
       DB_NAME: accommodation_finder
       DB_USER: root
       DB_PASSWORD: root
-      JWT_SECRET: change-me-in-production-accommodation-finder-secret-key-2026
+      # Required. Put JWT_SECRET=<openssl rand -base64 48> in a .env file next to
+      # this one (gitignored) or export it in your shell.
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET - generate one with: openssl rand -base64 48}
       CORS_ORIGINS: http://localhost:3000,http://localhost:5173
     ports:
       - "8080:8080"

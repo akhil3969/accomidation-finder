@@ -12,6 +12,10 @@ Do the tiers in order. Tier 0 is not optional.
 
 ### 0.1 Rotate the JWT secret and get it out of the repo — **S**
 
+> **Done.** `application.yml` has no default secret; the demo profile carries its own throwaway
+> value; `JwtService` refuses the leaked value in every profile; `ProductionConfigGuard` refuses
+> the demo value under `prod`; `docker-compose.yml` requires `JWT_SECRET`.
+
 `backend/src/main/resources/application.yml` ships a working default secret, and that file
 is public on GitHub. Anyone who reads it can forge a token for **any account, including
 admin**, on any deployment that did not override it. That is a complete authentication
@@ -55,6 +59,11 @@ token in its own table), booking-status-changed, new-message-digest.
 
 ### 0.4 Fix the booking race condition — **S**
 
+> **Done.** `BookingService.request` and `decide` take a `PESSIMISTIC_WRITE` row lock on the room
+> (`RoomRepository.findByIdWithLandlordForUpdate`, 5 s timeout) under `READ_COMMITTED`, and
+> `Room` and `Booking` carry `@Version`. Lock failures map to HTTP 409. Proven by
+> `BookingConcurrencyTests`, which fails when the lock is removed.
+
 `BookingService.request` checks for overlapping dates and then inserts. Two requests
 arriving at the same moment can both pass the check and both be written — two people
 holding the same room.
@@ -78,6 +87,11 @@ obligation, not a nice-to-have.
 
 ### 0.6 Turn off the things that leak in production — **S**
 
+> **Done** in the application: `application-prod.yml` sets `include-message/stacktrace: never` and
+> turns Hibernate SQL logging off; `/h2-console` is only permitted when the console is enabled
+> (demo profile); frames are denied otherwise; malformed-JSON errors no longer echo parser
+> internals. HTTPS/HSTS still belongs at the reverse proxy when you deploy.
+
 - `server.error.include-message: always` in `application.yml` sends exception text to the
   client. Override it to `never` in `application-prod.yml`.
 - `SecurityConfig` line 64 permits `/h2-console/**` in *every* profile. Move that matcher
@@ -93,6 +107,9 @@ per minute. Also cap `size` on every paginated endpoint — nothing stops
 `GET /api/rooms?size=1000000` today. Set `spring.data.web.pageable.max-page-size: 100`.
 
 ### 0.8 A way to create the first admin — **S**
+
+> **Done.** `config/AdminBootstrap` creates an admin from `ADMIN_EMAIL`/`ADMIN_PASSWORD` when none
+> exists, refuses passwords under 12 characters, and never promotes an existing account.
 
 Seeding is disabled in prod, so a production database has **no admin account** and no way
 to make one except editing the database by hand. Add a one-shot bootstrap: if

@@ -13,6 +13,7 @@ import com.accommodationfinder.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -44,9 +45,16 @@ public class BookingService {
 
     // ---------------------------------------------------------------- commands
 
-    @Transactional
+    /*
+     * READ_COMMITTED on the two methods that check for overlaps: under MySQL's default
+     * REPEATABLE READ, a plain read after the row lock can still see the snapshot taken
+     * before it, and miss a booking another transaction committed while we waited.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse request(BookingRequest request, User tenant) {
-        Room room = roomRepository.findByIdWithLandlord(request.roomId())
+        // Lock the room row first: without it two simultaneous requests can both see
+        // "no overlap" and both insert, leaving two people holding the same dates.
+        Room room = roomRepository.findByIdWithLandlordForUpdate(request.roomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room", request.roomId()));
 
         validateDates(request.checkIn(), request.checkOut());
@@ -81,7 +89,7 @@ public class BookingService {
     }
 
     /** Landlord accepts, rejects or completes a request. */
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse decide(Long bookingId, BookingDecisionRequest decision, User actor) {
         Booking booking = getEntity(bookingId);
         Long landlordId = booking.getRoom().getLandlord().getId();
@@ -93,6 +101,10 @@ public class BookingService {
         }
         if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new ConflictException("This booking was cancelled by the tenant");
+        }
+        if (target == BookingStatus.CONFIRMED) {
+            // Same race as in request(): two overlapping requests confirmed at once.
+            roomRepository.findByIdWithLandlordForUpdate(booking.getRoom().getId());
         }
         if (target == BookingStatus.CONFIRMED
                 && bookingRepository.existsOverlappingConfirmedBookingExcluding(

@@ -198,6 +198,8 @@ see `backend/.env.example`. The defaults are `localhost:3306`, `root` / `root`.
 ### Option C — Docker
 
 ```bash
+# the backend will not start without a secret
+echo "JWT_SECRET=$(openssl rand -base64 48)" > .env
 docker compose up --build
 ```
 
@@ -275,8 +277,11 @@ cd backend
 mvn test
 ```
 
-Covers the JWT service, the booking rules (overlaps, own-listing, guest limits, date
-validation) and an end-to-end auth flow through `MockMvc` against an in-memory database.
+Covers the JWT service (including refusing leaked or missing secrets), the booking rules
+(overlaps, own-listing, guest limits, date validation), a concurrency test that fires eight
+simultaneous booking requests at one room and asserts exactly one wins, optimistic locking,
+the production config guard, the first-admin bootstrap, and security hardening checks
+through `MockMvc` against an in-memory database.
 
 ---
 
@@ -309,7 +314,8 @@ Every setting has a working default; override with environment variables.
 | `SPRING_PROFILES_ACTIVE` | `demo` | `demo` (H2), `dev` (MySQL), `prod` |
 | `DB_HOST` / `DB_PORT` / `DB_NAME` | `localhost` / `3306` / `accommodation_finder` | `dev` profile |
 | `DB_USER` / `DB_PASSWORD` | `root` / `root` | `dev` profile |
-| `JWT_SECRET` | development value | **Change in production.** Minimum 32 characters |
+| `JWT_SECRET` | none (demo profile has a throwaway one) | **Required** outside the demo. Minimum 32 characters: `openssl rand -base64 48` |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | empty | Creates the first admin on an empty database, once. Password 12+ characters |
 | `JWT_EXPIRATION_MS` | `86400000` | 24 hours |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma separated |
 | `VITE_API_BASE_URL` | empty | Frontend: leave empty to use the Vite dev proxy |
@@ -320,7 +326,12 @@ Every setting has a working default; override with environment variables.
 
 - Run with `SPRING_PROFILES_ACTIVE=prod`. That sets `ddl-auto=validate` and disables
   seeding, so the schema must already exist — apply `database/schema.sql` first.
-- Supply a real `JWT_SECRET`; the app refuses to start on a secret shorter than 32 characters.
+- Supply a real `JWT_SECRET`. The app refuses to start if it is missing, shorter than 32
+  characters, the public demo value, or the value that was once committed to this repository.
+- Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` for the first boot to create the initial admin
+  (seeding is off in prod), then remove them.
+- The prod profile hides exception messages and stack traces from clients, keeps the H2
+  console closed, and turns off SQL logging, which would otherwise record personal data.
 - `npm run build` emits a static `dist/` — serve it from any CDN or the bundled nginx image.
 - The in-memory STOMP broker is fine for a single instance. To run more than one, swap
   `enableSimpleBroker` for `enableStompBrokerRelay` and put RabbitMQ or ActiveMQ behind it.

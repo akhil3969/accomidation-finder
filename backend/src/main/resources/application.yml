@@ -29,14 +29,23 @@ server:
 
 app:
   jwt:
-    # Override in production!  Must be at least 32 characters (256 bits).
-    secret: ${JWT_SECRET:change-me-in-production-accommodation-finder-secret-key-2026}
+    # No default on purpose: a missing JWT_SECRET must stop startup, not fall
+    # back to a value anyone can read on GitHub. Must be at least 32 characters.
+    # Generate one with:  openssl rand -base64 48
+    # The demo profile supplies its own throwaway value in application-demo.yml.
+    secret: ${JWT_SECRET:}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}       # 24 h
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}  # 7 days
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
   seed:
     enabled: true
+  # One-shot creation of the first admin on an empty production database.
+  # Ignored once any admin exists; see config/AdminBootstrap.java.
+  bootstrap:
+    admin-email: ${ADMIN_EMAIL:}
+    admin-password: ${ADMIN_PASSWORD:}
+    admin-name: ${ADMIN_NAME:Administrator}
 
 springdoc:
   swagger-ui:
