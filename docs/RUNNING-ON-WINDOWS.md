@@ -34,14 +34,14 @@ node -v
 
 Each should print a version. Anything that says *"is not recognized"* needs installing.
 
-### Java 17 or newer
+### Java 25 or newer
 
 ```powershell
-winget install Microsoft.OpenJDK.17
+winget install Microsoft.OpenJDK.25
 ```
 
-The version line must say **17 or higher**. Java 8 or 11 will not work — Spring Boot 3
-requires 17 as a minimum.
+The version line must say **25 or higher**. This project compiles for Java 25; Spring
+Boot 3.5 supports Java 17 through 25.
 
 ### Maven
 
@@ -221,10 +221,10 @@ Try `npm cache clean --force`, then `npm install` again. Make sure `node -v` pri
 higher.
 
 **`JAVA_HOME not found` or Maven picks the wrong Java**
-Point it at your JDK 17 explicitly:
+Point it at your JDK 25 explicitly:
 
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.13.11-hotspot"
+$env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-25.0.x-hotspot"
 ```
 
 Adjust the folder name to match what is actually in `C:\Program Files\Microsoft\`.

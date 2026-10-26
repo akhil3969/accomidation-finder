@@ -1,5 +1,5 @@
 # ---- build ----------------------------------------------------------------
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /build
 
 # Cache dependencies before copying the sources.
@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn -B -q clean package -DskipTests
 
 # ---- run ------------------------------------------------------------------
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 
 RUN useradd --system --create-home --shell /usr/sbin/nologin app

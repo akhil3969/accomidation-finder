@@ -2,8 +2,8 @@
 
 > Real-time accommodation search, booking and messaging — built as a portfolio project at **EPITA Paris**.
 
-![Java](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2-brightgreen?style=flat-square&logo=springboot)
+![Java](https://img.shields.io/badge/Java-25-orange?style=flat-square&logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-brightgreen?style=flat-square&logo=springboot)
 ![React](https://img.shields.io/badge/React-18-61dafb?style=flat-square&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite)
 ![Framer Motion](https://img.shields.io/badge/Framer%20Motion-11-0055ff?style=flat-square&logo=framer)
@@ -141,7 +141,7 @@ figures and links out to the official simulator.
 
 | Layer | Choice | Why |
 |---|---|---|
-| Backend | Java 17, Spring Boot 3.2 | Records for DTOs, pattern matching, long-term support |
+| Backend | Java 25, Spring Boot 3.5 | Records for DTOs, pattern matching, long-term support |
 | Persistence | Spring Data JPA, MySQL 8 | JPA Specifications give the dynamic search filter without string SQL |
 | Real-time | STOMP over SockJS | Named destinations and a per-user queue, with an automatic fallback transport |
 | Security | Spring Security 6 + JJWT 0.12 | Stateless, no server-side session to scale |
@@ -210,7 +210,7 @@ docker compose up --build
 
 ### Prerequisites
 
-- Java 17+ and Maven 3.8+
+- Java 25+ and Maven 3.9+
 - Node.js 18+ (20 recommended)
 - MySQL 8 — only for Option B; Options A and C do not need it installed
 

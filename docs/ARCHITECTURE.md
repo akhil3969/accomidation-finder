@@ -10,7 +10,7 @@
                  └────────────────┼─┼───────────┘
                                   │ │
                        ┌──────────▼─▼───────────┐
-                       │  Spring Boot 3.2       │
+                       │  Spring Boot 3.5       │
                        │                        │
                        │  Controller  (HTTP)    │
                        │      │                 │
@@ -43,7 +43,7 @@ is no field on `UserSummary` that could carry it.
 
 ## Why records for DTOs
 
-Java 17 records give immutable, boilerplate-free payloads that Jackson serialises and
+Java 25 records give immutable, boilerplate-free payloads that Jackson serialises and
 deserialises without configuration, and bean validation annotates cleanly on the
 components. Entities keep explicit getters and setters because JPA needs mutability and
 proxying — mixing the two styles is deliberate, not an oversight.
