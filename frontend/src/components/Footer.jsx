@@ -7,8 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer__inner">
         <span>
-          &copy; {YEAR} AccomFinder &middot; real-time accommodation search, built with Spring Boot,
-          WebSocket and React.
+          &copy; {YEAR} AccomFinder &middot; Student housing in Paris, with the real cost up front.
         </span>
         <span className="row" style={{ gap: '1rem' }}>
           <a

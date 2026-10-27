@@ -41,7 +41,7 @@ function countActive(filters) {
 }
 
 export default function Home() {
-  useDocumentTitle('Find your next place');
+  useDocumentTitle('Find a place to live in Paris');
 
   const { isAuthenticated } = useAuth();
   const { connected } = useRealtime();
@@ -210,13 +210,13 @@ export default function Home() {
         <div className="hero__inner">
           <span className="hero__eyebrow">
             <span className={`status-dot ${connected ? 'is-live' : 'is-down'}`} />
-            {connected ? 'Streaming live availability' : 'Reconnecting to live updates'}
+            {connected ? 'Listings update live' : 'Reconnecting…'}
           </span>
 
-          <h1>Find your next place, the moment it goes live</h1>
+          <h1>Find a place to live in Paris.</h1>
           <p>
-            Search verified rooms, studios and flats around Paris. Availability updates stream in
-            over a WebSocket, so what you see is what is actually free right now.
+            Rooms, studios and flats for students and newcomers. See what each one really costs
+            after housing aid, and book in a few clicks.
           </p>
 
           <form
@@ -230,7 +230,7 @@ export default function Home() {
             <input
               type="search"
               aria-label="Search listings"
-              placeholder="Try 'studio near EPITA' or a street name"
+              placeholder="Area, street or keyword"
               value={filters.query}
               onChange={(event) => updateFilters({ ...filters, query: event.target.value })}
             />
@@ -253,11 +253,11 @@ export default function Home() {
               step="50"
               inputMode="numeric"
               aria-label="Maximum price per month"
-              placeholder="Max €/month"
+              placeholder="Max rent €"
               value={filters.maxPrice}
               onChange={(event) => updateFilters({ ...filters, maxPrice: event.target.value })}
             />
-            <button type="submit" className="btn btn--accent">
+            <button type="submit" className="btn btn--primary">
               Search
             </button>
           </form>
@@ -265,15 +265,15 @@ export default function Home() {
           <div className="hero__stats">
             <div className="hero__stat">
               <strong>{result?.totalElements ?? '—'}</strong>
-              <span>listings match your filters</span>
+              <span>rooms match</span>
             </div>
             <div className="hero__stat">
               <strong>{availableCount}</strong>
-              <span>free on this page</span>
+              <span>available now</span>
             </div>
             <div className="hero__stat">
               <strong>{cities.length}</strong>
-              <span>cities covered</span>
+              <span>cities</span>
             </div>
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function Home() {
       <main className="page">
         <div className="page-header">
           <div>
-            <h2>Listings</h2>
+            <h2>Rooms</h2>
             <p aria-live="polite">
               {result
                 ? `${result.totalElements} result${result.totalElements === 1 ? '' : 's'}`
@@ -291,7 +291,7 @@ export default function Home() {
           </div>
           <div className="live-strip">
             <span className={`status-dot ${connected ? 'is-live' : 'is-down'}`} />
-            {connected ? 'Live updates active' : 'Reconnecting to live updates…'}
+            {connected ? 'Updating live' : 'Reconnecting…'}
           </div>
         </div>
 
