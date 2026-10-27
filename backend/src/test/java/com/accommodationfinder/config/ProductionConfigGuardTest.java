@@ -11,21 +11,21 @@ class ProductionConfigGuardTest {
 
     @Test
     void acceptsASafeConfiguration() {
-        assertThatCode(() -> new ProductionConfigGuard(REAL_SECRET, false, false))
+        assertThatCode(() -> new ProductionConfigGuard(REAL_SECRET, false, false, "smtp.example.com"))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void refusesThePublicDemoSecret() {
         assertThatThrownBy(() -> new ProductionConfigGuard(
-                "demo-only-insecure-jwt-secret-do-not-use-in-production", false, false))
+                "demo-only-insecure-jwt-secret-do-not-use-in-production", false, false, "smtp.example.com"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("demo secret");
     }
 
     @Test
     void refusesTheH2ConsoleAndDemoSeeding() {
-        assertThatThrownBy(() -> new ProductionConfigGuard(REAL_SECRET, true, true))
+        assertThatThrownBy(() -> new ProductionConfigGuard(REAL_SECRET, true, true, "smtp.example.com"))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("h2.console")
                 .hasMessageContaining("seed");

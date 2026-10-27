@@ -79,4 +79,8 @@ public interface RoomRepository extends JpaRepository<Room, Long>, JpaSpecificat
     /** Average rent in a city, used to spot listings priced suspiciously far below market. */
     @Query("select avg(r.price) from Room r where r.city = :city and r.hidden = false")
     Double averagePriceForCity(@Param("city") String city);
+
+    // ---------------------------------------------------------------- GDPR
+
+    List<Room> findAllByLandlordId(Long landlordId);
 }

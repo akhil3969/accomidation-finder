@@ -32,15 +32,18 @@ public class BookingService {
     private final RoomRepository roomRepository;
     private final BookingMapper bookingMapper;
     private final NotificationService notificationService;
+    private final UserNotificationService userNotificationService;
 
     public BookingService(BookingRepository bookingRepository,
                           RoomRepository roomRepository,
                           BookingMapper bookingMapper,
-                          NotificationService notificationService) {
+                          NotificationService notificationService,
+                          UserNotificationService userNotificationService) {
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
         this.bookingMapper = bookingMapper;
         this.notificationService = notificationService;
+        this.userNotificationService = userNotificationService;
     }
 
     // ---------------------------------------------------------------- commands
@@ -52,6 +55,7 @@ public class BookingService {
      */
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse request(BookingRequest request, User tenant) {
+        AuthService.requireVerifiedEmail(tenant, "request a booking");
         // Lock the room row first: without it two simultaneous requests can both see
         // "no overlap" and both insert, leaving two people holding the same dates.
         Room room = roomRepository.findByIdWithLandlordForUpdate(request.roomId())
@@ -85,6 +89,11 @@ public class BookingService {
 
         BookingResponse response = bookingMapper.toResponse(bookingRepository.save(booking));
         notificationService.bookingEvent(room.getLandlord().getEmail(), response);
+        userNotificationService.notify(room.getLandlord(), NotificationType.BOOKING_REQUESTED,
+                "New booking request for " + room.getTitle(),
+                tenant.getName() + " would like to stay " + request.checkIn() + " to " + request.checkOut()
+                        + (request.message() == null || request.message().isBlank() ? "" : ": \"" + request.message().trim() + "\""),
+                "/dashboard");
         return response;
     }
 
@@ -131,6 +140,7 @@ public class BookingService {
 
         BookingResponse response = bookingMapper.toResponse(saved);
         notificationService.bookingEvent(saved.getTenant().getEmail(), response);
+        notifyTenantOfDecision(saved);
         return response;
     }
 
@@ -151,6 +161,10 @@ public class BookingService {
 
         BookingResponse response = bookingMapper.toResponse(saved);
         notificationService.bookingEvent(saved.getRoom().getLandlord().getEmail(), response);
+        userNotificationService.notify(saved.getRoom().getLandlord(), NotificationType.BOOKING_CANCELLED,
+                saved.getTenant().getName() + " cancelled their request",
+                saved.getRoom().getTitle() + ", " + saved.getCheckIn() + " to " + saved.getCheckOut(),
+                "/dashboard");
         return response;
     }
 
@@ -190,6 +204,22 @@ public class BookingService {
     }
 
     // ---------------------------------------------------------------- helpers
+
+    private void notifyTenantOfDecision(Booking booking) {
+        String room = booking.getRoom().getTitle();
+        NotificationType type;
+        String title;
+        switch (booking.getStatus()) {
+            case CONFIRMED -> { type = NotificationType.BOOKING_CONFIRMED; title = "Your booking is confirmed: " + room; }
+            case REJECTED -> { type = NotificationType.BOOKING_REJECTED; title = "Your booking request was declined: " + room; }
+            case COMPLETED -> { type = NotificationType.BOOKING_COMPLETED; title = "Your stay is complete - you can now review " + room; }
+            default -> { return; }
+        }
+        String response = booking.getLandlordResponse();
+        userNotificationService.notify(booking.getTenant(), type, title,
+                response == null || response.isBlank() ? null : "The landlord says: \"" + response.trim() + "\"",
+                "/bookings");
+    }
 
     private Booking getEntity(Long id) {
         return bookingRepository.findById(id)

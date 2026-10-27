@@ -31,6 +31,11 @@ bypass.
 
 ### 0.2 Notifications that reach people who are not looking at the site — **M**
 
+> **Done.** `notifications` table, `UserNotificationService` (stores, then pushes on
+> `/user/queue/notifications`), `/api/notifications`, and a bell in the navbar. Chat bursts
+> collapse into one entry. `NotificationEmailJob` emails a digest of anything unread after
+> `NOTIFICATION_EMAIL_DELAY`, to verified addresses that have not opted out.
+
 **This is the bug that makes the product not work.** Right now a booking request only
 appears if the landlord happens to have the tab open. Close the browser and the request is
 invisible until they next sign in. No landlord will use that.
@@ -44,6 +49,12 @@ channel: the live WebSocket. It needs a second, persistent one.
 - Then layer email on top (item 0.3)
 
 ### 0.3 Transactional email — **M**
+
+> **Done.** `spring-boot-starter-mail` behind `MailGateway` (async; logs instead of sending
+> when no SMTP host is set). Verify-email and reset-password use single-use tokens stored only
+> as SHA-256 hashes (`user_tokens`). A reset bumps the user's token version, which signs out
+> every device. Booking, messaging and publishing require a verified address. Forgot-password
+> never reveals whether an account exists.
 
 Nothing in the system can send an email, which makes three things impossible:
 
@@ -75,6 +86,13 @@ holding the same room.
 
 ### 0.5 GDPR — you are handling EU personal data — **M**
 
+> **Done** in the application: consent checkbox with timestamp and version, `/privacy` and
+> `/terms` pages, `GET /api/users/me/export`, `DELETE /api/users/me` (password-confirmed
+> anonymisation; admin deletion uses the same path), and `RetentionJob` deleting read
+> notifications after 90 days and expired tokens after 7. No cookies or analytics, so no
+> consent banner. **Still yours to do:** fill in the controller's identity in the privacy
+> policy and have both pages reviewed.
+
 Names, phone numbers, addresses and private messages of people in France. This is a legal
 obligation, not a nice-to-have.
 
@@ -100,6 +118,10 @@ obligation, not a nice-to-have.
 - Set `logging.level.org.hibernate.SQL: OFF` in prod — SQL logs contain personal data.
 
 ### 0.7 Rate limiting — **S**
+
+> **Done.** `RateLimitFilter` (per IP: login 5/min, register 3/h, email endpoints 5/h),
+> per-user chat limit in `MessageService` (covers STOMP too), `429` + `Retry-After`, and
+> `max-page-size: 100`. In-memory - one instance only; see the note in `RateLimiter`.
 
 `/api/auth/login` will accept unlimited guesses. Add Bucket4j (or nginx `limit_req`):
 5 login attempts per IP per minute, 3 registrations per IP per hour, 20 messages per user
@@ -167,6 +189,9 @@ matches by email and push. This is the feature that brings users back.
 
 ### 1.6 Password reset UI — **S**
 
+> **Done.** `/forgot-password`, `/reset-password` and `/verify-email` pages, plus a banner
+> with *Resend link* for unconfirmed accounts.
+
 The backend work is in 0.3; this is the two screens: request-a-reset and set-a-new-password.
 
 ---
@@ -196,6 +221,9 @@ endpoint. You need `spring-boot-starter-actuator` — `SecurityConfig` already r
 `/actuator/health` but the dependency is not in `pom.xml`.
 
 ### 2.4 CI/CD — **M**
+
+> **CI done** (`.github/workflows/ci.yml`): `mvn verify` (Surefire + Failsafe), `npm run lint`
+> with zero warnings, `npm run build`. Deploy-on-merge waits for a hosting choice.
 
 GitHub Actions: on every push run `mvn test`, `npm run build`, and a linter; on merge to
 main, deploy. Removes the "works on my machine" class of problem entirely.
@@ -287,6 +315,8 @@ protection back, which is why it is a real piece of work rather than a one-liner
 is the correct design for a site holding personal data.
 
 ### 5.4 A React error boundary — **S**
+
+> **Done** - `components/ErrorBoundary.jsx` wraps the routes.
 
 There is none, so one render error blanks the entire page. Wrap the router in a boundary
 that shows something recoverable and reports to Sentry.

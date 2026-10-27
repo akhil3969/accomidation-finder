@@ -9,6 +9,7 @@ import com.accommodationfinder.model.Role;
 import com.accommodationfinder.model.User;
 import com.accommodationfinder.repository.*;
 import com.accommodationfinder.security.SecurityUtils;
+import com.accommodationfinder.service.AccountService;
 import com.accommodationfinder.service.AnalyticsService;
 import com.accommodationfinder.service.ScamDetectionService;
 import com.accommodationfinder.service.UserService;
@@ -38,6 +39,7 @@ public class AdminController {
     private final BookingRepository bookingRepository;
     private final ReportRepository reportRepository;
     private final ScamDetectionService scamDetectionService;
+    private final AccountService accountService;
 
     public AdminController(AnalyticsService analyticsService,
                            UserService userService,
@@ -45,7 +47,8 @@ public class AdminController {
                            RoomRepository roomRepository,
                            BookingRepository bookingRepository,
                            ReportRepository reportRepository,
-                           ScamDetectionService scamDetectionService) {
+                           ScamDetectionService scamDetectionService,
+                           AccountService accountService) {
         this.analyticsService = analyticsService;
         this.userService = userService;
         this.userRepository = userRepository;
@@ -53,6 +56,7 @@ public class AdminController {
         this.bookingRepository = bookingRepository;
         this.reportRepository = reportRepository;
         this.scamDetectionService = scamDetectionService;
+        this.accountService = accountService;
     }
 
     // ---------------------------------------------------------------- analytics
@@ -123,10 +127,11 @@ public class AdminController {
         if (me.getId().equals(id)) {
             throw new BadRequestException("You cannot delete your own account from here");
         }
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User", id);
-        }
-        userRepository.deleteById(id);
+        User target = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        // A hard delete failed on every user with a booking or a message (foreign keys),
+        // and would have orphaned the other party's records anyway. Erasure anonymises.
+        accountService.erase(target);
         return ResponseEntity.noContent().build();
     }
 

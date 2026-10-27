@@ -75,6 +75,8 @@ public class AdminBootstrap implements CommandLineRunner {
         }
 
         User admin = new User(name, email.toLowerCase(), passwordEncoder.encode(password), Role.ADMIN);
+        // The operator typed this address into the deployment's environment themselves.
+        admin.setEmailVerified(true);
         userRepository.save(admin);
         log.warn("Bootstrap admin account created for {} - remove ADMIN_PASSWORD from the environment now",
                 admin.getEmail());

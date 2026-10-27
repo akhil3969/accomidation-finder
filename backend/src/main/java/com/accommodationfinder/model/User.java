@@ -101,6 +101,36 @@ public class User {
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
+    // ------------------------------------------------------------ account / GDPR
+
+    /** Set once the person clicks the link we emailed. Booking, messaging and listing need it. */
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    /** Opt-out for the "you have unread notifications" emails. Account emails always send. */
+    @Column(name = "email_notifications", nullable = false)
+    private boolean emailNotifications = true;
+
+    /**
+     * Copied into every JWT as the "tv" claim. Bumping it (password reset, erasure) makes
+     * every token issued before that moment invalid - the only way to log out a stateless
+     * JWT. A counter, not a timestamp: JWT times have one-second resolution, a counter
+     * has no such blind spot.
+     */
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion = 0;
+
+    /** When, and to which version of the terms and privacy policy, the person agreed. */
+    @Column(name = "terms_accepted_at")
+    private LocalDateTime termsAcceptedAt;
+
+    @Column(name = "terms_version", length = 20)
+    private String termsVersion;
+
+    /** Non-null once the account has been erased; the row survives only as an anonymous shell. */
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -195,6 +225,25 @@ public class User {
 
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public void setVerifiedAt(LocalDateTime verifiedAt) { this.verifiedAt = verifiedAt; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public boolean isEmailNotifications() { return emailNotifications; }
+    public void setEmailNotifications(boolean emailNotifications) { this.emailNotifications = emailNotifications; }
+
+    public int getTokenVersion() { return tokenVersion; }
+    /** Signs out every device this account is logged in on. */
+    public void revokeAllTokens() { this.tokenVersion++; }
+
+    public LocalDateTime getTermsAcceptedAt() { return termsAcceptedAt; }
+    public void setTermsAcceptedAt(LocalDateTime termsAcceptedAt) { this.termsAcceptedAt = termsAcceptedAt; }
+
+    public String getTermsVersion() { return termsVersion; }
+    public void setTermsVersion(String termsVersion) { this.termsVersion = termsVersion; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 
     @Override
     public boolean equals(Object o) {

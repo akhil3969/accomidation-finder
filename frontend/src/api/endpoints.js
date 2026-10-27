@@ -7,6 +7,19 @@ export const authApi = {
   register: (payload) => client.post('/api/auth/register', payload).then((r) => r.data),
   login: (payload) => client.post('/api/auth/login', payload).then((r) => r.data),
   me: () => client.get('/api/auth/me').then((r) => r.data),
+  verifyEmail: (token) => client.post('/api/auth/verify-email', { token }).then((r) => r.data),
+  resendVerification: () => client.post('/api/auth/resend-verification').then((r) => r.data),
+  forgotPassword: (email) => client.post('/api/auth/forgot-password', { email }).then((r) => r.data),
+  resetPassword: (token, newPassword) =>
+    client.post('/api/auth/reset-password', { token, newPassword }).then((r) => r.data),
+};
+
+// ----------------------------------------------------------- notifications
+export const notificationApi = {
+  list: (params) => client.get('/api/notifications', { params }).then((r) => r.data),
+  unreadCount: () => client.get('/api/notifications/unread-count').then((r) => r.data),
+  markRead: (id) => client.patch(`/api/notifications/${id}/read`).then((r) => r.data),
+  markAllRead: () => client.post('/api/notifications/read-all').then((r) => r.data),
 };
 
 // ------------------------------------------------------------------ rooms
@@ -64,6 +77,9 @@ export const userApi = {
   updateMe: (payload) => client.put('/api/users/me', payload).then((r) => r.data),
   changePassword: (payload) => client.post('/api/users/me/password', payload).then((r) => r.data),
   becomeLandlord: () => client.post('/api/users/me/become-landlord').then((r) => r.data),
+  // Fetched as a Blob so the browser saves it as a file rather than rendering JSON.
+  exportData: () => client.get('/api/users/me/export', { responseType: 'blob' }).then((r) => r.data),
+  deleteAccount: (password) => client.delete('/api/users/me', { data: { password } }).then((r) => r.data),
 };
 
 // ------------------------------------------------------------------ admin

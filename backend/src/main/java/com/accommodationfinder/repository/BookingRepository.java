@@ -70,4 +70,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("select b.status, count(b) from Booking b group by b.status")
     List<Object[]> countGroupedByStatus();
+
+    // ---------------------------------------------------------------- GDPR
+
+    List<Booking> findAllByTenantIdOrderByRequestedAtDesc(Long tenantId);
+
+    @Query("select b from Booking b join fetch b.tenant where b.room.landlord.id = :landlordId and b.status = :status")
+    List<Booking> findByLandlordAndStatus(@Param("landlordId") Long landlordId, @Param("status") BookingStatus status);
+
+    @Query("select b from Booking b join fetch b.room r join fetch r.landlord where b.tenant.id = :tenantId and b.status = :status")
+    List<Booking> findByTenantAndStatus(@Param("tenantId") Long tenantId, @Param("status") BookingStatus status);
 }

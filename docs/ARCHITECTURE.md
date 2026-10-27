@@ -124,6 +124,42 @@ Authorisation is enforced twice on purpose:
 `RestAuthenticationEntryPoint` returns the same JSON `ApiError` shape as every other
 failure, so the frontend has exactly one error path to handle.
 
+## Notifications and email
+
+Every event that matters to someone who is not looking - a booking request, a decision, a
+cancellation, a chat message - goes through `UserNotificationService`:
+
+```
+BookingService / MessageService
+        │ notify(recipient, type, title, body, link)
+        ▼
+UserNotificationService ──► notifications table      (the bell reads this)
+        │
+        └──► NotificationService ──► /user/queue/notifications   (live, if online)
+
+NotificationEmailJob (every minute)
+        reads unread rows older than NOTIFICATION_EMAIL_DELAY
+        ──► EmailService (writes the digest) ──► MailGateway (@Async SMTP, or the log)
+```
+
+Reading the bell in time means no email at all; the digest is for people who left.
+Chat messages carry a collapse key, so ten messages from one person are one row.
+
+## Account security and GDPR
+
+- **Revocation.** Each user has a `token_version`, copied into the JWT as `tv`. A password
+  reset or an erasure increments it, and `JwtService.isTokenValidFor` rejects any token whose
+  `tv` no longer matches - the only way to log out a stateless token everywhere.
+- **Email tokens** (`user_tokens`) are 256-bit random values; only their SHA-256 hash is
+  stored, and each is single-use with an expiry.
+- **Erasure** (`AccountService.erase`) anonymises instead of deleting, because bookings and
+  conversations belong to two people. The other party keeps their record with "Deleted user"
+  and a removal notice in place of the messages.
+- **Retention** (`RetentionJob`, nightly) deletes read notifications after 90 days and
+  expired tokens after 7, matching the privacy policy.
+- **Rate limits** live in `RateLimitFilter` (per IP, auth endpoints) and `MessageService`
+  (per user, because chat also arrives over STOMP and never passes the servlet filter).
+
 ## Profiles
 
 | Profile | Database | `ddl-auto` | Seeding |
@@ -152,7 +188,8 @@ matters for a portfolio project someone will try in under five minutes. `prod` u
 
 ## Known limits
 
-- The STOMP broker is in-memory, so horizontal scaling needs a relay (RabbitMQ/ActiveMQ).
+- The STOMP broker and the rate-limit counters are in-memory, so horizontal scaling needs a
+  relay (RabbitMQ/ActiveMQ) and shared counters (Redis).
 - Images are URLs, not uploads — an object store and a signed-upload endpoint would be next.
 - No refresh-token rotation; the access token simply expires after 24 hours.
 - Search is `LIKE`-based. Past a few tens of thousands of listings this wants a real

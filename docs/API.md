@@ -49,11 +49,15 @@ Validation failures add a `fieldErrors` map:
 | 401 | Missing, expired or malformed token |
 | 403 | Authenticated, but not allowed to touch this resource |
 | 404 | No such id |
-| 409 | Conflicts with existing state (duplicate email, overlapping booking) |
+| 409 | Conflicts with existing state (duplicate email, overlapping booking, concurrent edit) |
+| 429 | Rate limit hit - wait for the number of seconds in the `Retry-After` header |
+
+`403` is also returned by booking, messaging and publishing when the account's email
+address has not been confirmed yet.
 
 ## Pagination
 
-List endpoints accept `page` (0-based), `size` and `sort` (`field,asc|desc`) and return:
+List endpoints accept `page` (0-based), `size` (capped at 100) and `sort` (`field,asc|desc`) and return:
 
 ```json
 {
@@ -76,14 +80,23 @@ List endpoints accept `page` (0-based), `size` and `sort` (`field,asc|desc`) and
 | POST | `/api/auth/register` | — | Create an account, returns a token |
 | POST | `/api/auth/login` | — | Exchange credentials for a token |
 | GET | `/api/auth/me` | ✔ | The signed-in user |
+| POST | `/api/auth/verify-email` | — | `{ "token": "..." }` from the verification email |
+| POST | `/api/auth/resend-verification` | ✔ | Email a fresh verification link |
+| POST | `/api/auth/forgot-password` | — | `{ "email": "..." }` - always `204`, whether or not the account exists |
+| POST | `/api/auth/reset-password` | — | `{ "token": "...", "newPassword": "..." }` - signs out every device |
 
 **POST `/api/auth/register`**
 
 ```json
-{ "name": "Ada Lovelace", "email": "ada@example.com", "password": "password123", "phone": "+33...", "role": "TENANT" }
+{ "name": "Ada Lovelace", "email": "ada@example.com", "password": "password123", "phone": "+33...", "role": "TENANT", "acceptTerms": true }
 ```
 
 `role` accepts `TENANT` or `LANDLORD`; anything else (including `ADMIN`) becomes `TENANT`.
+`acceptTerms` must be `true`; the time and terms version are stored with the account.
+A verification email is sent; until it is confirmed, `user.emailVerified` is `false`.
+
+**Rate limits** (per client IP): login 5/minute, register 3/hour, the four email
+endpoints 5/hour. Sending chat messages is limited to 20/minute per user.
 
 Response `201`:
 
@@ -245,6 +258,28 @@ tenant per listing.
 | PUT | `/api/users/me` | ✔ | Update name / phone / bio / avatar |
 | POST | `/api/users/me/password` | ✔ | Change password |
 | POST | `/api/users/me/become-landlord` | ✔ | Upgrade a tenant account |
+| GET | `/api/users/me/export` | ✔ | Everything held about you, as a JSON download (GDPR access/portability) |
+| DELETE | `/api/users/me` | ✔ | `{ "password": "..." }` - erase your account (GDPR erasure) |
+
+`PUT /api/users/me` also accepts `emailNotifications: true|false`.
+
+Erasure anonymises rather than deletes the row: name becomes "Deleted user", the email
+becomes unusable, personal fields are cleared, sent messages are replaced by a removal
+notice, reviews, favourites and checklist progress are deleted, open bookings are
+cancelled (the other party is notified), and every token is revoked.
+
+## Notifications — `/api/notifications`
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/api/notifications` | ✔ | Your notifications, newest first (paged) |
+| GET | `/api/notifications/unread-count` | ✔ | `{ "unread": 2 }` |
+| PATCH | `/api/notifications/{id}/read` | ✔ | Mark one read (someone else's id is a `404`) |
+| POST | `/api/notifications/read-all` | ✔ | Mark all read |
+
+Created for booking requests, decisions and cancellations, and new chat messages (a burst
+from one person collapses into one entry). Anything still unread after
+`NOTIFICATION_EMAIL_DELAY` (10 minutes by default) is emailed as a single digest.
 | GET | `/api/users/{id}` | ✔ | Public profile |
 
 ## Admin — `/api/admin`
@@ -253,6 +288,7 @@ tenant per listing.
 |---|---|---|---|
 | GET | `/api/admin/users` | ADMIN | All accounts |
 | PATCH | `/api/admin/users/{id}/enabled` | ADMIN | Enable / disable an account |
+| DELETE | `/api/admin/users/{id}` | ADMIN | Erase an account (same anonymisation as self-service deletion) |
 | GET | `/api/admin/stats` | ADMIN | Platform counters |
 
 ---
@@ -271,6 +307,7 @@ required only for the private `/user/queue/**` destinations.
 | `/topic/rooms/{id}/availability` | server → all | Availability event for one listing |
 | `/user/queue/messages` | server → user | `MessageResponse` |
 | `/user/queue/bookings` | server → user | `BookingResponse` on any status change |
+| `/user/queue/notifications` | server → user | `NotificationResponse` - the same row the bell stores |
 | `/app/chat.send` | client → server | `{ "recipientId": 2, "roomId": 1, "content": "Hi!" }` |
 
 ```js

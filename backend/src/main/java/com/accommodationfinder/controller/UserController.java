@@ -1,13 +1,17 @@
 package com.accommodationfinder.controller;
 
+import com.accommodationfinder.dto.AccountDtos.PersonalDataExport;
 import com.accommodationfinder.dto.UserDtos.ChangePasswordRequest;
+import com.accommodationfinder.dto.UserDtos.DeleteAccountRequest;
 import com.accommodationfinder.dto.UserDtos.UpdateProfileRequest;
 import com.accommodationfinder.dto.UserDtos.UserSummary;
 import com.accommodationfinder.security.SecurityUtils;
+import com.accommodationfinder.service.AccountService;
 import com.accommodationfinder.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +22,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final AccountService accountService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AccountService accountService) {
         this.userService = userService;
+        this.accountService = accountService;
     }
 
     @GetMapping("/me")
@@ -50,6 +56,23 @@ public class UserController {
     @Operation(summary = "Upgrade a tenant account so it can publish listings")
     public UserSummary becomeLandlord() {
         return userService.becomeLandlord(SecurityUtils.requireCurrentUser());
+    }
+
+    @GetMapping("/me/export")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Download everything held about you as JSON (GDPR right of access and portability)")
+    public ResponseEntity<PersonalDataExport> export() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"accomfinder-my-data.json\"")
+                .body(accountService.export(SecurityUtils.requireCurrentUser().getId()));
+    }
+
+    @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Erase your account and personal data (GDPR right to erasure). Needs your password")
+    public ResponseEntity<Void> deleteMe(@Valid @RequestBody DeleteAccountRequest request) {
+        accountService.deleteOwnAccount(SecurityUtils.requireCurrentUser(), request.password());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

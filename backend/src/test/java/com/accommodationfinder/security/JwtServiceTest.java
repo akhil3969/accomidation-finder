@@ -52,6 +52,24 @@ class JwtServiceTest {
     }
 
     @Test
+    void revokingTokensKillsEveryTokenIssuedBefore() {
+        String before = jwtService.generateToken(user);
+        assertThat(jwtService.isTokenValidFor(before, user)).isTrue();
+
+        user.revokeAllTokens();
+
+        assertThat(jwtService.isTokenValidFor(before, user)).isFalse();
+        assertThat(jwtService.isTokenValidFor(jwtService.generateToken(user), user)).isTrue();
+    }
+
+    @Test
+    void aDisabledAccountsTokenIsRejected() {
+        String token = jwtService.generateToken(user);
+        user.setEnabled(false);
+        assertThat(jwtService.isTokenValidFor(token, user)).isFalse();
+    }
+
+    @Test
     void refusesToStartWithASecretThatWasPublishedInTheRepository() {
         JwtProperties leaked = new JwtProperties(
                 "change-me-in-production-accommodation-finder-secret-key-2026", 1000L, 2000L);

@@ -4,6 +4,7 @@ import com.accommodationfinder.model.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -29,4 +30,12 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
            group by r.room.id
            """)
     List<Object[]> aggregateRatings(@Param("roomIds") Collection<Long> roomIds);
+
+    // ---------------------------------------------------------------- GDPR
+
+    List<Review> findByAuthorIdOrderByCreatedAtDesc(Long authorId);
+
+    @Modifying
+    @Query("delete from Review r where r.author.id = :authorId")
+    int deleteByAuthorId(@Param("authorId") Long authorId);
 }

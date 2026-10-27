@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Loader from './components/Loader';
+import VerifyEmailBanner from './components/VerifyEmailBanner';
 import Home from './pages/Home';
 
 /**
@@ -30,6 +31,10 @@ const Checklist = lazy(() => import('./pages/Checklist'));
 const Guides = lazy(() => import('./pages/Guides'));
 const GuideDetail = lazy(() => import('./pages/GuideDetail'));
 const AidCalculator = lazy(() => import('./pages/AidCalculator'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const Legal = lazy(() => import('./pages/Legal'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 /** A route change should start you at the top of the new page, not halfway down the old one. */
@@ -50,6 +55,7 @@ export default function App() {
       </a>
 
       <Navbar />
+      <VerifyEmailBanner />
       <ScrollToTop pathname={location.pathname} />
 
       <div className="app-shell__content" id="main-content">
@@ -67,6 +73,11 @@ export default function App() {
                 <Route path="/guides" element={<Guides />} />
                 <Route path="/guides/:slug" element={<GuideDetail />} />
                 <Route path="/cost" element={<AidCalculator />} />
+                <Route path="/verify-email" element={<VerifyEmail />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/privacy" element={<Legal kind="privacy" />} />
+                <Route path="/terms" element={<Legal kind="terms" />} />
 
                 {/* signed in */}
                 <Route

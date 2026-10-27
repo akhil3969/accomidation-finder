@@ -88,6 +88,8 @@ public class RoomService {
 
     @Transactional
     public RoomResponse create(RoomRequest request, User landlord) {
+        // An unconfirmed address is the cheapest identity a scammer can have.
+        AuthService.requireVerifiedEmail(landlord, "publish a listing");
         Room room = new Room();
         roomMapper.apply(request, room);
         room.setLandlord(landlord);

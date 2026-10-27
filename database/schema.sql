@@ -158,6 +158,23 @@ CREATE TABLE `moderation_actions` (
   CONSTRAINT `FK7poio9ncyp3c58t8h0viqpmuo` FOREIGN KEY (`moderator_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `notifications` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `body` varchar(500) DEFAULT NULL,
+  `collapse_key` varchar(100) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `emailed_at` datetime(6) DEFAULT NULL,
+  `link` varchar(255) DEFAULT NULL,
+  `read_flag` bit(1) NOT NULL DEFAULT b'0',
+  `title` varchar(200) NOT NULL,
+  `type` enum('BOOKING_REQUESTED','BOOKING_CONFIRMED','BOOKING_REJECTED','BOOKING_CANCELLED','BOOKING_COMPLETED','NEW_MESSAGE') NOT NULL,
+  `recipient_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_notifications_recipient_read` (`recipient_id`,`read_flag`),
+  KEY `idx_notifications_email_queue` (`read_flag`,`emailed_at`,`created_at`),
+  CONSTRAINT `fk_notifications_recipient` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `reports` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `created_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
@@ -258,6 +275,20 @@ CREATE TABLE `rooms` (
   CONSTRAINT `FKjnuh04e327bnyefv78431g8yx` FOREIGN KEY (`landlord_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `user_tokens` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `created_at` datetime(6) NOT NULL,
+  `expires_at` datetime(6) NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `type` enum('EMAIL_VERIFICATION','PASSWORD_RESET') NOT NULL,
+  `used_at` datetime(6) DEFAULT NULL,
+  `user_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_user_tokens_hash` (`token_hash`),
+  KEY `idx_user_tokens_user_type` (`user_id`,`type`),
+  CONSTRAINT `fk_user_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `users` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `arrival_date` date DEFAULT NULL,
@@ -267,6 +298,12 @@ CREATE TABLE `users` (
   `date_of_birth` date DEFAULT NULL,
   `email` varchar(150) NOT NULL,
   `enabled` bit(1) NOT NULL DEFAULT b'1',
+  `email_verified` bit(1) NOT NULL DEFAULT b'0',
+  `email_notifications` bit(1) NOT NULL DEFAULT b'1',
+  `token_version` int(11) NOT NULL DEFAULT 0,
+  `terms_accepted_at` datetime(6) DEFAULT NULL,
+  `terms_version` varchar(20) DEFAULT NULL,
+  `deleted_at` datetime(6) DEFAULT NULL,
   `eu_national` bit(1) DEFAULT NULL,
   `has_french_guarantor` bit(1) NOT NULL DEFAULT b'0',
   `monthly_income` decimal(10,2) DEFAULT NULL,

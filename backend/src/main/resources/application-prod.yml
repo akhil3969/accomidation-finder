@@ -13,10 +13,14 @@ spring:
     console:
       enabled: false
 
-# Spring's fallback /error page must not echo exception text, stack traces or
-# binding details back to the client - they describe the internals to an attacker.
-# GlobalExceptionHandler already returns its own safe messages for known errors.
 server:
+  # Trust X-Forwarded-For / X-Forwarded-Proto from the reverse proxy, so rate limits
+  # see the real client IP and redirects keep https. Only safe behind a proxy that
+  # overwrites these headers - which every managed host (Render, Railway, Fly) does.
+  forward-headers-strategy: framework
+  # Spring's fallback /error page must not echo exception text, stack traces or
+  # binding details back to the client - they describe the internals to an attacker.
+  # GlobalExceptionHandler already returns its own safe messages for known errors.
   error:
     include-message: never
     include-stacktrace: never
@@ -26,6 +30,9 @@ server:
 app:
   seed:
     enabled: false
+  mail:
+    # Verification and reset links are credentials - never write them to logs.
+    log-body: false
 
 logging:
   level:

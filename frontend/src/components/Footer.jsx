@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const YEAR = new Date().getFullYear();
 
 export default function Footer() {
@@ -19,6 +21,8 @@ export default function Footer() {
           <a href="/swagger-ui.html" target="_blank" rel="noreferrer">
             API docs
           </a>
+          <Link to="/privacy">Privacy</Link>
+          <Link to="/terms">Terms</Link>
         </span>
       </div>
     </footer>

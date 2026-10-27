@@ -32,6 +32,7 @@ class BookingServiceTest {
     @Mock private BookingRepository bookingRepository;
     @Mock private RoomRepository roomRepository;
     @Mock private NotificationService notificationService;
+    @Mock private UserNotificationService userNotificationService;
     @Spy  private BookingMapper bookingMapper = new BookingMapper();
 
     @InjectMocks private BookingService bookingService;
@@ -44,9 +45,11 @@ class BookingServiceTest {
     void setUp() {
         landlord = new User("Jean", "jean@landlord.fr", "hash", Role.LANDLORD);
         landlord.setId(1L);
+        landlord.setEmailVerified(true);
 
         tenant = new User("Akhil", "akhil@epita.fr", "hash", Role.TENANT);
         tenant.setId(2L);
+        tenant.setEmailVerified(true);
 
         room = new Room();
         room.setId(10L);

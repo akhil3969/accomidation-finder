@@ -27,7 +27,35 @@ public final class AuthDtos {
             String phone,
 
             /** TENANT when omitted. ADMIN can never be self-assigned. */
-            Role role
+            Role role,
+
+            /** Consent to the terms and privacy policy - recorded with a timestamp (GDPR art. 7). */
+            @NotNull(message = "You must accept the terms and privacy policy")
+            @AssertTrue(message = "You must accept the terms and privacy policy")
+            Boolean acceptTerms
+    ) {
+    }
+
+    public record TokenRequest(
+            @NotBlank(message = "The link is missing its token")
+            String token
+    ) {
+    }
+
+    public record ForgotPasswordRequest(
+            @NotBlank(message = "Email is required")
+            @Email(message = "Email must be valid")
+            String email
+    ) {
+    }
+
+    public record ResetPasswordRequest(
+            @NotBlank(message = "The link is missing its token")
+            String token,
+
+            @NotBlank(message = "Password is required")
+            @Size(min = 8, max = 72, message = "Password must be between 8 and 72 characters")
+            String newPassword
     ) {
     }
 

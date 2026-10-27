@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { userApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useConfirm } from '../context/ConfirmContext';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import useForm, { compact, passwordStrength, rules } from '../hooks/useForm';
 import PageTransition from '../components/PageTransition';
@@ -13,9 +15,13 @@ import { formatDate, initials } from '../utils/format';
 export default function Profile() {
   useDocumentTitle('Your profile');
 
-  const { user, updateUser, becomeLandlord } = useAuth();
+  const { user, updateUser, becomeLandlord, signOut } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
+  const navigate = useNavigate();
   const [upgrading, setUpgrading] = useState(false);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const profileForm = useForm({
     initialValues: {
@@ -71,6 +77,60 @@ export default function Profile() {
   });
 
   const strength = passwordStrength(passwordForm.values.newPassword);
+
+  const deleteForm = useForm({
+    initialValues: { password: '' },
+    validate: (values) => compact({ password: rules.required(values.password, 'Your password') }),
+    onSubmit: async (values) => {
+      const sure = await confirm({
+        title: 'Delete your account?',
+        message: 'This erases your profile, favourites, reviews and the messages you sent. It cannot be undone.',
+        detail: 'Open booking requests are cancelled and the other person is told. Past bookings stay on their side as "Deleted user".',
+        confirmLabel: 'Delete my account',
+        tone: 'danger',
+      });
+      if (!sure) return;
+      try {
+        await userApi.deleteAccount(values.password);
+        signOut();
+        toast.success('Your account has been deleted');
+        navigate('/', { replace: true });
+      } catch (error) {
+        const message = toMessage(error);
+        throw Object.assign(new Error(message), { userMessage: message });
+      }
+    },
+  });
+
+  async function toggleEmailNotifications(event) {
+    const enabled = event.target.checked;
+    setSavingPrefs(true);
+    try {
+      updateUser(await userApi.updateMe({ emailNotifications: enabled }));
+      toast.success(enabled ? 'Email notifications on' : 'Email notifications off');
+    } catch (error) {
+      toast.error(toMessage(error));
+    } finally {
+      setSavingPrefs(false);
+    }
+  }
+
+  async function downloadData() {
+    setExporting(true);
+    try {
+      const blob = await userApi.exportData();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'accomfinder-my-data.json';
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      toast.error(toMessage(error));
+    } finally {
+      setExporting(false);
+    }
+  }
 
   async function upgrade() {
     setUpgrading(true);
@@ -252,6 +312,81 @@ export default function Profile() {
           <button type="submit" className="btn btn--ghost" disabled={passwordForm.submitting}>
             {passwordForm.submitting && <ButtonSpinner />}
             {passwordForm.submitting ? 'Updating…' : 'Update password'}
+          </button>
+        </div>
+      </form>
+
+      <div className="card">
+        <div className="card__header">
+          <h3>Email notifications</h3>
+        </div>
+        <div className="card__body stack">
+          <label className="checkbox" htmlFor="emailNotifications">
+            <input
+              id="emailNotifications"
+              type="checkbox"
+              checked={user?.emailNotifications !== false}
+              disabled={savingPrefs}
+              onChange={toggleEmailNotifications}
+            />
+            <span>Email me about booking updates and messages I have not seen on the site</span>
+          </label>
+          <p className="small muted" style={{ margin: 0 }}>
+            Anything you read here within a few minutes is never emailed. Password and account emails always send.
+          </p>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card__header">
+          <h3>Your data</h3>
+        </div>
+        <div className="card__body stack">
+          <div className="row row--between">
+            <div>
+              <strong>Download everything we hold about you</strong>
+              <div className="small muted">Profile, bookings, listings, messages, reviews and more, as a JSON file.</div>
+            </div>
+            <button type="button" className="btn btn--ghost" onClick={downloadData} disabled={exporting}>
+              {exporting && <ButtonSpinner />}
+              {exporting ? 'Preparing…' : 'Download my data'}
+            </button>
+          </div>
+          <p className="small muted" style={{ margin: 0 }}>
+            See the <Link to="/privacy">privacy policy</Link> for what is kept and for how long.
+          </p>
+        </div>
+      </div>
+
+      <form className="card card--danger" onSubmit={deleteForm.handleSubmit} noValidate>
+        <div className="card__header">
+          <h3>Delete account</h3>
+        </div>
+        <div className="card__body stack">
+          <p className="small muted" style={{ margin: 0 }}>
+            Permanently erases your account and personal data. Enter your password to confirm it is you.
+          </p>
+          <TextField
+            id="deletePassword"
+            name="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={deleteForm.values.password}
+            error={deleteForm.errorFor('password')}
+            onChange={deleteForm.handleChange}
+            onBlur={deleteForm.handleBlur}
+          />
+          {deleteForm.formError && (
+            <div className="form-alert" role="alert">
+              {deleteForm.formError}
+            </div>
+          )}
+        </div>
+        <div className="card__footer">
+          <button type="submit" className="btn btn--danger" disabled={deleteForm.submitting}>
+            {deleteForm.submitting && <ButtonSpinner />}
+            {deleteForm.submitting ? 'Deleting…' : 'Delete my account'}
           </button>
         </div>
       </form>

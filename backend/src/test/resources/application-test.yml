@@ -21,3 +21,11 @@ app:
     allowed-origins: http://localhost:5173
   seed:
     enabled: false
+  # Every MockMvc request comes from 127.0.0.1, so the real limits would trip
+  # across unrelated tests. RateLimitTests switches them back on for itself.
+  rate-limit:
+    enabled: false
+  # The email job must only run when a test calls it, never on a background timer
+  # halfway through another test.
+  notifications:
+    email-check-interval: 3600000

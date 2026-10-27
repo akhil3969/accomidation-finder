@@ -3,6 +3,8 @@ package com.accommodationfinder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Entry point for the Accommodation Finder platform.
@@ -16,6 +18,8 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
+@EnableAsync        // outgoing email never blocks the HTTP request that triggered it
+@EnableScheduling   // notification emails, retention clean-up, rate-limit eviction
 public class AccommodationFinderApplication {
 
     public static void main(String[] args) {

@@ -15,13 +15,13 @@ USE accommodation_finder;
 
 SET @pw = '$2b$10$BKr3uNJszWQyL.py3yuUyOA6Mo6P6G7NxwVA.Fl8hpo23Ob3slnLi';
 
-INSERT INTO users (id, name, email, password, phone, role, bio, enabled) VALUES
-(1, 'Platform Admin',  'admin@accomfinder.app', @pw, '+33 6 00 00 00 00', 'ADMIN',    'Keeps the listings honest.', TRUE),
-(2, 'Jean Dupont',     'jean@landlord.fr',      @pw, '+33 6 12 34 56 78', 'LANDLORD', 'Renting student-friendly flats around Paris since 2015.', TRUE),
-(3, 'Marie Lefevre',   'marie@landlord.fr',     @pw, '+33 6 98 76 54 32', 'LANDLORD', 'Three quiet studios near the metro, ideal for MSc students.', TRUE),
-(4, 'Kona Sai Akhil',  'akhil@epita.fr',        @pw, '+33 7 11 22 33 44', 'TENANT',   'MSc student at EPITA Paris looking for a studio.', TRUE),
-(5, 'Sofia Rossi',     'sofia@student.fr',      @pw, '+33 7 55 66 77 88', 'TENANT',   'Erasmus student, non-smoker, tidy.', TRUE),
-(6, 'Liam O''Connor',  'liam@student.fr',       @pw, '+33 7 99 88 77 66', 'TENANT',   'PhD candidate, needs a quiet place to work.', TRUE);
+INSERT INTO users (id, name, email, password, phone, role, bio, enabled, email_verified, terms_version) VALUES
+(1, 'Platform Admin',  'admin@accomfinder.app', @pw, '+33 6 00 00 00 00', 'ADMIN',    'Keeps the listings honest.', TRUE, TRUE, 'demo'),
+(2, 'Jean Dupont',     'jean@landlord.fr',      @pw, '+33 6 12 34 56 78', 'LANDLORD', 'Renting student-friendly flats around Paris since 2015.', TRUE, TRUE, 'demo'),
+(3, 'Marie Lefevre',   'marie@landlord.fr',     @pw, '+33 6 98 76 54 32', 'LANDLORD', 'Three quiet studios near the metro, ideal for MSc students.', TRUE, TRUE, 'demo'),
+(4, 'Kona Sai Akhil',  'akhil@epita.fr',        @pw, '+33 7 11 22 33 44', 'TENANT',   'MSc student at EPITA Paris looking for a studio.', TRUE, TRUE, 'demo'),
+(5, 'Sofia Rossi',     'sofia@student.fr',      @pw, '+33 7 55 66 77 88', 'TENANT',   'Erasmus student, non-smoker, tidy.', TRUE, TRUE, 'demo'),
+(6, 'Liam O''Connor',  'liam@student.fr',       @pw, '+33 7 99 88 77 66', 'TENANT',   'PhD candidate, needs a quiet place to work.', TRUE, TRUE, 'demo');
 
 INSERT INTO rooms
 (id, title, description, city, address, postal_code, price, deposit, size_sqm, bedrooms, bathrooms,

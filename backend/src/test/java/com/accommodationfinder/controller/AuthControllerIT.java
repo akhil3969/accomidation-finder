@@ -27,7 +27,7 @@ class AuthControllerIT {
     @Test
     void registersThenSignsInAndReachesAProtectedEndpoint() throws Exception {
         RegisterRequest register = new RegisterRequest(
-                "Test Tenant", "tenant@test.fr", "password123", "+33600000000", Role.TENANT);
+                "Test Tenant", "tenant@test.fr", "password123", "+33600000000", Role.TENANT, true);
 
         String body = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -55,7 +55,7 @@ class AuthControllerIT {
     @Test
     void rejectsADuplicateEmail() throws Exception {
         RegisterRequest register = new RegisterRequest(
-                "First", "duplicate@test.fr", "password123", null, Role.TENANT);
+                "First", "duplicate@test.fr", "password123", null, Role.TENANT, true);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +71,7 @@ class AuthControllerIT {
 
     @Test
     void rejectsAnInvalidPayloadWithFieldLevelErrors() throws Exception {
-        RegisterRequest bad = new RegisterRequest("A", "not-an-email", "short", null, Role.TENANT);
+        RegisterRequest bad = new RegisterRequest("A", "not-an-email", "short", null, Role.TENANT, null);
 
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -5,6 +5,9 @@ import com.accommodationfinder.model.ReportStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,4 +26,13 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     List<Report> findByRoomIdOrderByCreatedAtDesc(Long roomId);
 
     boolean existsByReporterIdAndRoomId(Long reporterId, Long roomId);
+
+    // ---------------------------------------------------------------- GDPR
+
+    List<Report> findByReporterIdOrderByCreatedAtDesc(Long reporterId);
+
+    /** Reports stay for the moderation record; only the link to who filed them goes. */
+    @Modifying
+    @Query("update Report r set r.reporter = null where r.reporter.id = :userId")
+    int detachReporter(@Param("userId") Long userId);
 }

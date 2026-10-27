@@ -27,6 +27,8 @@ public class JwtService {
      * Secrets that were once committed to the public repository. Anyone can sign
      * tokens with them, so they are refused in every profile.
      */
+    static final String TOKEN_VERSION_CLAIM = "tv";
+
     static final Set<String> LEAKED_SECRETS = Set.of(
             "change-me-in-production-accommodation-finder-secret-key-2026");
 
@@ -73,6 +75,7 @@ public class JwtService {
         claims.put("uid", user.getId());
         claims.put("role", user.getRole().name());
         claims.put("name", user.getName());
+        claims.put(TOKEN_VERSION_CLAIM, user.getTokenVersion());
 
         Date now = new Date();
         Date expiry = new Date(now.getTime() + properties.expirationMs());
@@ -104,6 +107,28 @@ public class JwtService {
             Claims claims = parseClaims(token);
             return claims.getSubject().equalsIgnoreCase(expectedUsername)
                     && claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException ex) {
+            log.debug("Rejected JWT: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Full check against the account behind the token: signature, expiry, subject, the
+     * account still enabled, and the token's version matching the account's. JWTs are
+     * stateless, so that last comparison is what makes "reset password" actually sign out
+     * a thief who already holds a token.
+     */
+    public boolean isTokenValidFor(String token, User user) {
+        try {
+            Claims claims = parseClaims(token);
+            Object version = claims.get(TOKEN_VERSION_CLAIM);
+            // Tokens minted before versions existed carry no claim; they count as version 0.
+            int tokenVersion = version == null ? 0 : Integer.parseInt(version.toString());
+            return claims.getSubject().equalsIgnoreCase(user.getEmail())
+                    && claims.getExpiration().after(new Date())
+                    && user.isEnabled()
+                    && tokenVersion == user.getTokenVersion();
         } catch (JwtException | IllegalArgumentException ex) {
             log.debug("Rejected JWT: {}", ex.getMessage());
             return false;

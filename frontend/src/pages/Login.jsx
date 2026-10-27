@@ -76,6 +76,7 @@ export default function Login() {
               label="Password"
               type="password"
               autoComplete="current-password"
+              hint={<Link to="/forgot-password">Forgot your password?</Link>}
               required
               value={form.values.password}
               error={form.errorFor('password')}

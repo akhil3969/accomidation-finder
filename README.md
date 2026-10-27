@@ -10,6 +10,7 @@
 ![MySQL](https://img.shields.io/badge/MySQL-8.0-4479a1?style=flat-square&logo=mysql)
 ![WebSocket](https://img.shields.io/badge/STOMP-WebSocket-blue?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-black?style=flat-square)
+[![CI](https://github.com/akhil3969/accomidation-finder/actions/workflows/ci.yml/badge.svg)](https://github.com/akhil3969/accomidation-finder/actions/workflows/ci.yml)
 
 ---
 
@@ -31,7 +32,9 @@ no refresh button.
 | ⭐ **Reviews** | Star ratings, restricted to tenants who actually stayed |
 | ❤️ **Favourites** | One-click save, batched into the listing grid in a single request |
 | 👤 **Roles** | `TENANT`, `LANDLORD` and `ADMIN`, enforced both at the URL and the method level |
-| 🔐 **Auth** | Stateless JWT, BCrypt hashing, JSON error bodies, WebSocket handshake authentication |
+| 🔐 **Auth** | Stateless JWT with server-side revocation, BCrypt hashing, email verification, password reset, rate limiting |
+| 🔔 **Notifications** | A persistent bell for booking updates and messages, plus an email digest of anything left unread |
+| 🛡️ **GDPR** | Recorded consent at sign-up, one-click data export, self-service account erasure, enforced retention |
 
 ---
 
@@ -274,14 +277,19 @@ accommodation-finder/
 
 ```bash
 cd backend
-mvn test
+mvn verify          # 56 tests: unit, integration (MockMvc + H2) and *IT
+
+cd frontend
+npm run lint && npm run build
 ```
 
-Covers the JWT service (including refusing leaked or missing secrets), the booking rules
-(overlaps, own-listing, guest limits, date validation), a concurrency test that fires eight
-simultaneous booking requests at one room and asserts exactly one wins, optimistic locking,
-the production config guard, the first-admin bootstrap, and security hardening checks
-through `MockMvc` against an in-memory database.
+GitHub Actions runs all of this on every push and pull request.
+
+The backend suite covers the JWT service (leaked secrets, revocation), the booking rules, a
+concurrency test that fires eight simultaneous booking requests at one room and asserts
+exactly one wins, optimistic locking, rate limiting, the email verification and password
+reset flows end to end, persistent notifications and the email digest, the GDPR export and
+erasure, the production config guard and the first-admin bootstrap.
 
 ---
 
@@ -317,6 +325,10 @@ Every setting has a working default; override with environment variables.
 | `JWT_SECRET` | none (demo profile has a throwaway one) | **Required** outside the demo. Minimum 32 characters: `openssl rand -base64 48` |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` | empty | Creates the first admin on an empty database, once. Password 12+ characters |
 | `JWT_EXPIRATION_MS` | `86400000` | 24 hours |
+| `FRONTEND_URL` | `http://localhost:5173` | Where links in emails point |
+| `SPRING_MAIL_HOST` / `_PORT` / `_USERNAME` / `_PASSWORD` | unset | SMTP, e.g. Brevo `smtp-relay.brevo.com:587`. Unset: emails are written to the log instead |
+| `MAIL_FROM` | `AccomFinder <no-reply@accomfinder.app>` | Sender address |
+| `NOTIFICATION_EMAIL_DELAY` | `10m` | How long a notification stays unread before it is emailed |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:3000` | Comma separated |
 | `VITE_API_BASE_URL` | empty | Frontend: leave empty to use the Vite dev proxy |
 
@@ -332,6 +344,10 @@ Every setting has a working default; override with environment variables.
   (seeding is off in prod), then remove them.
 - The prod profile hides exception messages and stack traces from clients, keeps the H2
   console closed, and turns off SQL logging, which would otherwise record personal data.
+- Set `SPRING_MAIL_HOST` and friends. Without SMTP nobody can verify an email or reset a
+  password; the prod profile logs a warning at startup if it is missing.
+- Rate limits are per instance and use the client IP from `X-Forwarded-For` (the prod
+  profile trusts the proxy). Behind several instances, move them to Redis or nginx.
 - `npm run build` emits a static `dist/` — serve it from any CDN or the bundled nginx image.
 - The in-memory STOMP broker is fine for a single instance. To run more than one, swap
   `enableSimpleBroker` for `enableStompBrokerRelay` and put RabbitMQ or ActiveMQ behind it.
@@ -349,8 +365,12 @@ Every setting has a working default; override with environment variables.
 - [x] JWT authentication with tenant / landlord / admin roles
 - [x] Favourites and reviews
 - [x] Seed data, Docker Compose and API documentation
+- [x] Email verification, password reset and notification emails
+- [x] Persistent notifications (bell + email digest)
+- [x] GDPR: consent, data export, account erasure, retention
+- [x] Rate limiting and concurrency-safe bookings
+- [x] CI on GitHub Actions
 - [ ] Image upload to object storage (currently URLs)
-- [ ] Email notifications
 - [ ] Deployment on Railway / Render
 
 ---

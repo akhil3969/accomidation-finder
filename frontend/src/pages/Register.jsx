@@ -24,6 +24,7 @@ function validate(values) {
       values.phone && !/^[+\d][\d\s().-]{5,}$/.test(values.phone.trim())
         ? 'That does not look like a phone number'
         : undefined,
+    acceptTerms: values.acceptTerms ? undefined : 'Please accept the terms and privacy policy to continue',
   });
 }
 
@@ -42,6 +43,7 @@ export default function Register() {
       confirm: '',
       phone: '',
       role: 'TENANT',
+      acceptTerms: false,
     },
     validate,
     onSubmit: async (values) => {
@@ -52,8 +54,9 @@ export default function Register() {
           password: values.password,
           phone: values.phone.trim() || null,
           role: values.role,
+          acceptTerms: values.acceptTerms,
         });
-        toast.success(`Account created. Welcome, ${user.name.split(' ')[0]}!`);
+        toast.success(`Welcome, ${user.name.split(' ')[0]}! Check your inbox to confirm your email.`);
         navigate(values.role === 'LANDLORD' ? '/dashboard' : '/', { replace: true });
       } catch (error) {
         throw Object.assign(new Error(toMessage(error)), { userMessage: toMessage(error) });
@@ -187,6 +190,35 @@ export default function Register() {
                 </div>
               )}
             </Field>
+
+            <div>
+              <label className="checkbox" htmlFor="acceptTerms">
+                <input
+                  id="acceptTerms"
+                  name="acceptTerms"
+                  type="checkbox"
+                  checked={form.values.acceptTerms}
+                  aria-invalid={Boolean(form.errorFor('acceptTerms'))}
+                  aria-describedby={form.errorFor('acceptTerms') ? 'acceptTerms-error' : undefined}
+                  onChange={(event) => form.setValue('acceptTerms', event.target.checked)}
+                />
+                <span>
+                  I accept the{' '}
+                  <Link to="/terms" target="_blank">
+                    terms of use
+                  </Link>{' '}
+                  and the{' '}
+                  <Link to="/privacy" target="_blank">
+                    privacy policy
+                  </Link>
+                </span>
+              </label>
+              {form.errorFor('acceptTerms') && (
+                <span className="field__error" id="acceptTerms-error" role="alert">
+                  {form.errorFor('acceptTerms')}
+                </span>
+              )}
+            </div>
 
             {form.formError && (
               <motion.div

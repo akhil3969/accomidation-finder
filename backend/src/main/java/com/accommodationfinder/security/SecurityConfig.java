@@ -69,7 +69,7 @@ public class SecurityConfig {
             })
             .authorizeHttpRequests(auth -> auth
                 // --- public ---
-                .requestMatchers("/api/auth/me").authenticated()
+                .requestMatchers("/api/auth/me", "/api/auth/resend-verification").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rooms/mine", "/api/rooms/mine/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/rooms", "/api/rooms/**").permitAll()

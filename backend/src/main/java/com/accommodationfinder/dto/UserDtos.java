@@ -2,6 +2,7 @@ package com.accommodationfinder.dto;
 
 import com.accommodationfinder.model.Role;
 import com.accommodationfinder.model.User;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
@@ -20,7 +21,10 @@ public final class UserDtos {
             Role role,
             String avatarUrl,
             String bio,
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+            /** Only present on your own profile. */
+            Boolean emailVerified,
+            Boolean emailNotifications
     ) {
         public static UserSummary from(User user) {
             if (user == null) {
@@ -34,7 +38,9 @@ public final class UserDtos {
                     user.getRole(),
                     user.getAvatarUrl(),
                     user.getBio(),
-                    user.getCreatedAt());
+                    user.getCreatedAt(),
+                    user.isEmailVerified(),
+                    user.isEmailNotifications());
         }
 
         /** Minimal projection used inside room cards and chat threads. */
@@ -50,6 +56,8 @@ public final class UserDtos {
                     user.getRole(),
                     user.getAvatarUrl(),
                     user.getBio(),
+                    null,
+                    null,
                     null);
         }
     }
@@ -58,7 +66,14 @@ public final class UserDtos {
             @Size(min = 2, max = 100) String name,
             @Size(max = 30) String phone,
             @Size(max = 500) String bio,
-            @Size(max = 500) String avatarUrl
+            @Size(max = 500) String avatarUrl,
+            Boolean emailNotifications
+    ) {
+    }
+
+    /** Erasure needs the password again: a stolen token alone must not be able to delete an account. */
+    public record DeleteAccountRequest(
+            @NotBlank(message = "Enter your password to confirm") String password
     ) {
     }
 

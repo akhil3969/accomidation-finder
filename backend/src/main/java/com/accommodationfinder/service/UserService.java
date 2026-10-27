@@ -54,6 +54,9 @@ public class UserService {
         if (request.avatarUrl() != null) {
             user.setAvatarUrl(request.avatarUrl().trim());
         }
+        if (request.emailNotifications() != null) {
+            user.setEmailNotifications(request.emailNotifications());
+        }
         return UserSummary.from(userRepository.save(user));
     }
 

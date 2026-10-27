@@ -42,4 +42,12 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     int markConversationRead(@Param("userId") Long userId,
                              @Param("roomId") Long roomId,
                              @Param("otherUserId") Long otherUserId);
+
+    /**
+     * Erases what the person wrote but keeps the row, so the other side's thread still
+     * makes sense ("message removed") instead of half a conversation vanishing.
+     */
+    @Modifying
+    @Query("update Message m set m.content = :replacement where m.sender.id = :userId")
+    int redactSentBy(@Param("userId") Long userId, @Param("replacement") String replacement);
 }

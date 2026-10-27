@@ -112,7 +112,9 @@ class BookingConcurrencyTests {
 
     private User newUser(Role role) {
         String email = role.name().toLowerCase() + "-" + UUID.randomUUID() + "@test.fr";
-        return userRepository.save(new User("Test " + role, email, "hash", role));
+        User user = new User("Test " + role, email, "hash", role);
+        user.setEmailVerified(true);
+        return userRepository.save(user);
     }
 
     private Room newRoom() {

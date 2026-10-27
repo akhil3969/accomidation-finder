@@ -17,6 +17,20 @@ spring:
     default-property-inclusion: non_null
     serialization:
       write-dates-as-timestamps: false
+  data:
+    web:
+      pageable:
+        # Without a cap, GET /api/rooms?size=1000000 loads the whole table.
+        max-page-size: 100
+  # SMTP. Nothing here turns it on: set SPRING_MAIL_HOST (plus _PORT, _USERNAME,
+  # _PASSWORD) in the environment - e.g. smtp-relay.brevo.com:587. Without a host,
+  # emails are written to the log instead (see MailGateway).
+  mail:
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 10000
   servlet:
     multipart:
       max-file-size: 5MB
@@ -40,6 +54,28 @@ app:
     allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
   seed:
     enabled: true
+  # Where email links point. The SPA routes /verify-email and /reset-password.
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:AccomFinder <no-reply@accomfinder.app>}
+    log-body: true            # log emails when no SMTP is configured (off in prod)
+  notifications:
+    # Unread for this long -> included in an email digest. Read in time -> no email.
+    email-delay: ${NOTIFICATION_EMAIL_DELAY:10m}
+    email-check-interval: 60000
+  legal:
+    # Bump when the terms or privacy policy change; stored per user at sign-up.
+    terms-version: "2026-10"
+  retention:
+    read-notifications: 90d
+    expired-tokens: 7d
+  # Per-IP limits on auth endpoints (RateLimitFilter) and per-user limits on chat.
+  rate-limit:
+    enabled: true
+    login:       { limit: 5,  window: 1m }
+    register:    { limit: 3,  window: 1h }
+    email-flows: { limit: 5,  window: 1h }
+    messages:    { limit: 20, window: 1m }
   # One-shot creation of the first admin on an empty production database.
   # Ignored once any admin exists; see config/AdminBootstrap.java.
   bootstrap:

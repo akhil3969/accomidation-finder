@@ -23,6 +23,7 @@ public class NotificationService {
     public static final String TOPIC_ROOM_PREFIX = "/topic/rooms/";
     public static final String QUEUE_MESSAGES = "/queue/messages";
     public static final String QUEUE_BOOKINGS = "/queue/bookings";
+    public static final String QUEUE_NOTIFICATIONS = "/queue/notifications";
 
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -50,6 +51,11 @@ public class NotificationService {
 
     public void bookingEvent(String recipientEmail, BookingResponse booking) {
         sendToUser(recipientEmail, QUEUE_BOOKINGS, booking);
+    }
+
+    /** Feeds the navbar bell; the same row is already stored by UserNotificationService. */
+    public void notification(String recipientEmail, Object notification) {
+        sendToUser(recipientEmail, QUEUE_NOTIFICATIONS, notification);
     }
 
     private void send(String destination, Object payload) {

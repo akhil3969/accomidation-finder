@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useRealtime } from '../context/RealtimeContext';
 import { useInbox } from '../context/InboxContext';
+import NotificationBell from './NotificationBell';
 import useMediaQuery from '../hooks/useMediaQuery';
 import { DURATION, EASE, fadeVariants } from '../motion/tokens';
 import { initials } from '../utils/format';
@@ -33,7 +34,7 @@ export default function Navbar() {
   const { unread } = useInbox();
   const navigate = useNavigate();
   const location = useLocation();
-  const isCompact = useMediaQuery('(max-width: 860px)');
+  const isCompact = useMediaQuery('(max-width: 1200px)')  // keep in step with the nav media query in index.css;
   const [open, setOpen] = useState(false);
 
   // Navigating with the sheet open used to leave it hanging over the new page.
@@ -109,6 +110,7 @@ export default function Navbar() {
 
       {isAuthenticated ? (
         <>
+          <NotificationBell />
           <Link to="/profile" className="nav-link" title={user?.name} aria-label="Your profile">
             <span className="avatar avatar--sm">{initials(user?.name)}</span>
           </Link>

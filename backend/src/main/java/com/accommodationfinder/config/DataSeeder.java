@@ -227,6 +227,10 @@ public class DataSeeder implements CommandLineRunner {
 
     private User user(String name, String email, Role role, String phone, String bio) {
         User user = new User(name, email, passwordEncoder.encode(DEMO_PASSWORD), role);
+        // Demo accounts are usable immediately; real sign-ups confirm by email.
+        user.setEmailVerified(true);
+        user.setTermsAcceptedAt(java.time.LocalDateTime.now());
+        user.setTermsVersion("demo");
         user.setPhone(phone);
         user.setBio(bio);
         user.setAvatarUrl("https://i.pravatar.cc/150?u=" + email);

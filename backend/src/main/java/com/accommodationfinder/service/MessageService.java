@@ -5,12 +5,16 @@ import com.accommodationfinder.dto.UserDtos;
 import com.accommodationfinder.exception.BadRequestException;
 import com.accommodationfinder.exception.ResourceNotFoundException;
 import com.accommodationfinder.mapper.MessageMapper;
+import com.accommodationfinder.exception.TooManyRequestsException;
 import com.accommodationfinder.model.Message;
+import com.accommodationfinder.model.NotificationType;
 import com.accommodationfinder.model.Room;
 import com.accommodationfinder.model.User;
 import com.accommodationfinder.repository.MessageRepository;
 import com.accommodationfinder.repository.RoomRepository;
 import com.accommodationfinder.repository.UserRepository;
+import com.accommodationfinder.security.RateLimitProperties;
+import com.accommodationfinder.security.RateLimiter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,21 +32,38 @@ public class MessageService {
     private final RoomRepository roomRepository;
     private final MessageMapper messageMapper;
     private final NotificationService notificationService;
+    private final UserNotificationService userNotificationService;
+    private final RateLimiter rateLimiter;
+    private final RateLimitProperties.Rule messageLimit;
 
     public MessageService(MessageRepository messageRepository,
                           UserRepository userRepository,
                           RoomRepository roomRepository,
                           MessageMapper messageMapper,
-                          NotificationService notificationService) {
+                          NotificationService notificationService,
+                          UserNotificationService userNotificationService,
+                          RateLimiter rateLimiter,
+                          RateLimitProperties rateLimitProperties) {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.messageMapper = messageMapper;
         this.notificationService = notificationService;
+        this.userNotificationService = userNotificationService;
+        this.rateLimiter = rateLimiter;
+        this.messageLimit = rateLimitProperties.messages();
     }
 
     @Transactional
     public MessageResponse send(SendMessageRequest request, User sender) {
+        // Limited here rather than in RateLimitFilter: chat also arrives over STOMP.
+        RateLimiter.Decision decision = rateLimiter.tryAcquire(
+                "messages|" + sender.getId(), messageLimit.limit(), messageLimit.window());
+        if (!decision.allowed()) {
+            throw new TooManyRequestsException(
+                    "You are sending messages too quickly - wait a moment and try again", decision.retryAfterSeconds());
+        }
+        AuthService.requireVerifiedEmail(sender, "send messages");
         if (request.recipientId().equals(sender.getId())) {
             throw new BadRequestException("You cannot message yourself");
         }
@@ -62,6 +83,10 @@ public class MessageService {
         // Push to the recipient, and echo to the sender so their other tabs stay in sync.
         notificationService.chatMessage(recipient.getEmail(), response);
         notificationService.chatMessage(sender.getEmail(), response);
+        userNotificationService.notifyCollapsing(recipient, NotificationType.NEW_MESSAGE,
+                "New message from " + sender.getName() + " about " + room.getTitle(),
+                message.getContent(), "/messages",
+                "message:" + room.getId() + ":" + sender.getId());
         return response;
     }
 
