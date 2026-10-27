@@ -23,9 +23,9 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
@@ -38,7 +38,7 @@ jobs:
 
       - name: Keep the test reports when something fails
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: backend-test-reports
           path: |
@@ -52,9 +52,9 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -78,6 +78,11 @@ jobs:
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -pdrill-only-password"
           --health-interval=5s --health-timeout=5s --health-retries=20
+    defaults:
+      run:
+        # Explicit bash gives -eo pipefail: without it `script | tee` reports tee's
+        # success even when the script fails, which once hid a broken backup step.
+        shell: bash
     env:
       DB_HOST: 127.0.0.1
       DB_PORT: '3306'
@@ -85,7 +90,7 @@ jobs:
       DB_PASSWORD: drill-only-password
       MYSQL_PWD: drill-only-password
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build a database from the real migrations, with a known row
         run: |
