@@ -8,6 +8,11 @@
     <meta name="description"
           content="Find student and professional accommodation in real time - search, filter, chat and book." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- The demo listing photos come from picsum.photos (which redirects to
+         fastly.picsum.photos). Opening those connections early saves a round
+         trip on the first photo. Point these at your image CDN once uploads exist. -->
+    <link rel="preconnect" href="https://picsum.photos" />
+    <link rel="preconnect" href="https://fastly.picsum.photos" />
     <title>AccomFinder - real-time accommodation search</title>
   </head>
   <body>

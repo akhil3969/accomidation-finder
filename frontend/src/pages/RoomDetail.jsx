@@ -306,6 +306,10 @@ export default function RoomDetail() {
                   key={images[activeImage]}
                   src={images[activeImage]}
                   alt={room.title}
+                  // The main photo is what Lighthouse times as "largest contentful
+                  // paint": fetch it ahead of everything else on the page.
+                  fetchPriority="high"
+                  decoding="async"
                   initial={{ opacity: 0, scale: 1.02 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
