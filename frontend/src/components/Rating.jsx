@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 
 const STARS = '★★★★★';
 
@@ -40,7 +40,7 @@ export function RatingInput({ value, onChange }) {
   return (
     <div className="rating-input" role="radiogroup" aria-label="Your rating">
       {[1, 2, 3, 4, 5].map((star) => (
-        <motion.button
+        <m.button
           key={star}
           type="button"
           role="radio"
@@ -52,7 +52,7 @@ export function RatingInput({ value, onChange }) {
           onClick={() => onChange(star)}
         >
           {star <= value ? '★' : '☆'}
-        </motion.button>
+        </m.button>
       ))}
     </div>
   );

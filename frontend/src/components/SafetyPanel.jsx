@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { newcomerApi, reportApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -105,7 +105,7 @@ export default function SafetyPanel({ roomId }) {
             >
               {/* The bar grows into place rather than appearing at full width,
                   which makes a high score register as a high score. */}
-              <motion.div
+              <m.div
                 className="risk-meter__fill"
                 style={{ background: METER_COLOR[level] }}
                 initial={{ width: 0 }}

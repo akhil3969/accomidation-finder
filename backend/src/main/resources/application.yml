@@ -51,7 +51,7 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}       # 24 h
     refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}  # 7 days
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:4173,http://localhost:3000,http://127.0.0.1:5173}
   seed:
     enabled: true
   # Where email links point. The SPA routes /verify-email and /reset-password.

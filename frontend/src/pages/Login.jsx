@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { toMessage } from '../api/client';
@@ -85,14 +85,14 @@ export default function Login() {
             />
 
             {form.formError && (
-              <motion.div
+              <m.div
                 className="form-alert"
                 role="alert"
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 {form.formError}
-              </motion.div>
+              </m.div>
             )}
 
             <button

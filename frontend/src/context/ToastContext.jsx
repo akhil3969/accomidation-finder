@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { toastVariants } from '../motion/tokens';
 
 const ToastContext = createContext(null);
@@ -66,7 +66,7 @@ export function ToastProvider({ children }) {
         <div className="toast-stack" role="status" aria-live="polite">
           <AnimatePresence initial={false}>
             {toasts.map((toast) => (
-              <motion.div
+              <m.div
                 key={toast.id}
                 layout
                 className={`toast toast--${toast.tone}`}
@@ -87,7 +87,7 @@ export function ToastProvider({ children }) {
                 >
                   &#10005;
                 </button>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>,

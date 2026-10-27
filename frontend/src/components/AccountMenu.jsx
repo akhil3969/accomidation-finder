@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { DURATION, EASE } from '../motion/tokens';
 import { initials } from '../utils/format';
 
@@ -56,7 +56,7 @@ export default function AccountMenu({ user, links, onSignOut }) {
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             className="menu__panel"
             variants={panelVariants}
             initial="initial"
@@ -88,7 +88,7 @@ export default function AccountMenu({ user, links, onSignOut }) {
             >
               Sign out
             </button>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

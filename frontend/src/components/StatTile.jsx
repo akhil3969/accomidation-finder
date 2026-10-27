@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { animate, motion, useReducedMotion } from 'framer-motion';
+import { animate, m, useReducedMotion } from 'framer-motion';
 import { DURATION, EASE } from '../motion/tokens';
 
 /**
@@ -35,7 +35,7 @@ export default function StatTile({ label, value, tone = '', hint }) {
   const shown = useCountUp(value);
 
   return (
-    <motion.div
+    <m.div
       className={`stat-tile ${tone ? `stat-tile--${tone}` : ''}`}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
@@ -44,6 +44,6 @@ export default function StatTile({ label, value, tone = '', hint }) {
       <div className="stat-tile__label">{label}</div>
       <div className="stat-tile__value">{shown}</div>
       {hint && <div className="small muted">{hint}</div>}
-    </motion.div>
+    </m.div>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { newcomerApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -126,7 +126,7 @@ export default function Checklist() {
           </div>
           <div className="progress-bar" role="progressbar" aria-valuenow={percentage}
                aria-valuemin={0} aria-valuemax={100}>
-            <motion.div
+            <m.div
               className="progress-bar__fill"
               initial={false}
               animate={{ width: `${percentage}%` }}
@@ -140,7 +140,7 @@ export default function Checklist() {
       {categories.map((category) => (
         <section key={category} style={{ marginBottom: '1.75rem' }}>
           <h2 style={{ fontSize: '1.05rem' }}>{category}</h2>
-          <motion.div
+          <m.div
             className="stack"
             variants={listVariants}
             initial="initial"
@@ -150,7 +150,7 @@ export default function Checklist() {
             {view.entries
               .filter((entry) => entry.category === category)
               .map((entry) => (
-                <motion.article
+                <m.article
                   key={entry.itemId}
                   layout
                   variants={itemVariants}
@@ -193,9 +193,9 @@ export default function Checklist() {
                       </a>
                     )}
                   </div>
-                </motion.article>
+                </m.article>
               ))}
-          </motion.div>
+          </m.div>
         </section>
       ))}
 

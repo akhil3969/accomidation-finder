@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { DURATION, EASE } from '../motion/tokens';
 
 /**
@@ -9,7 +9,7 @@ import { DURATION, EASE } from '../motion/tokens';
  * demo and becomes irritating on the second scroll.
  */
 export default function Reveal({ children, delay = 0, y = 20, className, as = 'div' }) {
-  const Component = motion[as] || motion.div;
+  const Component = m[as] || m.div;
 
   return (
     <Component

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { pageVariants } from '../motion/tokens';
 
 /**
@@ -10,7 +10,7 @@ import { pageVariants } from '../motion/tokens';
  */
 export default function PageTransition({ children, className }) {
   return (
-    <motion.div
+    <m.div
       className={className}
       variants={pageVariants}
       initial="initial"
@@ -18,6 +18,6 @@ export default function PageTransition({ children, className }) {
       exit="exit"
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

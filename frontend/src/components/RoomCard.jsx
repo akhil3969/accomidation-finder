@@ -1,6 +1,6 @@
 import { forwardRef, memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Rating from './Rating';
 import { itemVariants } from '../motion/tokens';
 import { ROOM_TYPE_LABELS, formatPrice, placeholderImage } from '../utils/format';
@@ -40,9 +40,8 @@ const RoomCard = forwardRef(function RoomCard(
   const cover = room.images?.[0] || placeholderImage(room.id);
 
   return (
-    <motion.article
+    <m.article
       ref={ref}
-      layout="position"
       variants={itemVariants}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.18, ease: [0.22, 0.61, 0.36, 1] }}
@@ -55,7 +54,7 @@ const RoomCard = forwardRef(function RoomCard(
       {isNew && <span className="room-card__new">Just listed</span>}
 
       {canFavorite && (
-        <motion.button
+        <m.button
           type="button"
           className={`icon-btn room-card__fav ${room.favorite ? 'is-active' : ''}`}
           aria-label={room.favorite ? 'Remove from saved' : 'Save this listing'}
@@ -64,15 +63,15 @@ const RoomCard = forwardRef(function RoomCard(
           whileTap={{ scale: 0.8 }}
           onClick={handleFavorite}
         >
-          <motion.span
+          <m.span
             key={room.favorite ? 'on' : 'off'}
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: 'spring', stiffness: 520, damping: 18 }}
           >
             {room.favorite ? '♥' : '♡'}
-          </motion.span>
-        </motion.button>
+          </m.span>
+        </m.button>
       )}
 
       <div className="room-card__body">
@@ -110,7 +109,7 @@ const RoomCard = forwardRef(function RoomCard(
           </Link>
         </div>
       </div>
-    </motion.article>
+    </m.article>
   );
 });
 

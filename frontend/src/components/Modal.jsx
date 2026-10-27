@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { backdropVariants, panelVariants } from '../motion/tokens';
 
 const FOCUSABLE =
@@ -96,7 +96,7 @@ export default function Modal({ open, title, children, onClose, footer, size = '
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
+        <m.div
           className="modal-backdrop"
           role="presentation"
           variants={backdropVariants}
@@ -108,7 +108,7 @@ export default function Modal({ open, title, children, onClose, footer, size = '
           }}
           onKeyDown={handleKeyDown}
         >
-          <motion.div
+          <m.div
             ref={panelRef}
             className={`modal modal--${size}`}
             role="dialog"
@@ -128,8 +128,8 @@ export default function Modal({ open, title, children, onClose, footer, size = '
             </div>
             <div className="card__body">{content.children}</div>
             {content.footer && <div className="card__footer">{content.footer}</div>}
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>,
     document.body,

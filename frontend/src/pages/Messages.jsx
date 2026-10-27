@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { messageApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -243,14 +243,14 @@ export default function Messages() {
                     <span className="small muted">{timeAgo(thread.lastMessageAt)}</span>
                     <AnimatePresence>
                       {thread.unreadCount > 0 && (
-                        <motion.span
+                        <m.span
                           className="badge badge--danger"
                           initial={{ scale: 0.5, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0.5, opacity: 0 }}
                         >
                           {thread.unreadCount}
-                        </motion.span>
+                        </m.span>
                       )}
                     </AnimatePresence>
                   </span>
@@ -282,9 +282,8 @@ export default function Messages() {
                     {messages.map((message) => {
                       const mine = message.sender?.id === user?.id;
                       return (
-                        <motion.div
+                        <m.div
                           key={message.id}
-                          layout="position"
                           variants={bubbleVariants}
                           initial="initial"
                           animate="animate"
@@ -297,7 +296,7 @@ export default function Messages() {
                           <span className="bubble__time">
                             {message.pending ? 'Sending…' : formatDateTime(message.sentAt)}
                           </span>
-                        </motion.div>
+                        </m.div>
                       );
                     })}
                   </AnimatePresence>

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { STATUS_LABELS } from '../utils/format';
 import { spring } from '../motion/tokens';
 
@@ -21,7 +21,7 @@ export default function StatusBadge({ status }) {
   return (
     <span className="status-badge">
       <AnimatePresence mode="wait" initial={false}>
-        <motion.span
+        <m.span
           key={status}
           className={`badge badge--${TONE[status] || 'neutral'}`}
           initial={{ opacity: 0, y: -6, scale: 0.9 }}
@@ -30,7 +30,7 @@ export default function StatusBadge({ status }) {
           transition={spring}
         >
           {STATUS_LABELS[status] || status}
-        </motion.span>
+        </m.span>
       </AnimatePresence>
     </span>
   );

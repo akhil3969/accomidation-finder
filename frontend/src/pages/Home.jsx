@@ -1,11 +1,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { favoriteApi, roomApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useRealtime, useSubscription } from '../context/RealtimeContext';
 import { useToast } from '../context/ToastContext';
 import useDocumentTitle from '../hooks/useDocumentTitle';
+import useNearViewport from '../hooks/useNearViewport';
 import PageTransition from '../components/PageTransition';
 import SearchFilters from '../components/SearchFilters';
 import RoomCard from '../components/RoomCard';
@@ -42,6 +43,8 @@ function countActive(filters) {
 
 export default function Home() {
   useDocumentTitle('Find a place to live in Paris');
+  const mapRef = useRef(null);
+  const mapNear = useNearViewport(mapRef);
 
   const { isAuthenticated } = useAuth();
   const { connected } = useRealtime();
@@ -335,7 +338,7 @@ export default function Home() {
             {/* Dimming the grid while the next page loads reads as progress
                 without the layout collapsing back to a spinner. */}
             {rooms.length > 0 && (
-              <motion.div
+              <m.div
                 className={`room-grid ${loading ? 'is-refreshing' : ''}`}
                 variants={listVariants}
                 initial="initial"
@@ -353,7 +356,7 @@ export default function Home() {
                     />
                   ))}
                 </AnimatePresence>
-              </motion.div>
+              </m.div>
             )}
 
             <Pagination
@@ -363,10 +366,15 @@ export default function Home() {
             />
           </div>
 
-          <aside className="map-column">
-            <Suspense fallback={<div className="skeleton" style={{ height: '100%' }} />}>
-              <MapView rooms={rooms} />
-            </Suspense>
+          <aside className="map-column" ref={mapRef}>
+            {/* The map library is 45KB; it is only fetched once this column nears the screen. */}
+            {mapNear ? (
+              <Suspense fallback={<div className="skeleton" style={{ height: '100%' }} />}>
+                <MapView rooms={rooms} />
+              </Suspense>
+            ) : (
+              <div className="skeleton" style={{ height: '100%' }} />
+            )}
           </aside>
         </div>
       </main>

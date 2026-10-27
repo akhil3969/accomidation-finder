@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { notificationApi } from '../api/endpoints';
 import { useAuth } from '../context/AuthContext';
 import { useSubscription } from '../context/RealtimeContext';
@@ -121,7 +121,7 @@ export default function NotificationBell() {
       >
         <span aria-hidden="true">🔔</span>
         {unread > 0 && (
-          <motion.span
+          <m.span
             key={unread}
             className="nav-badge"
             initial={{ scale: 0.4, opacity: 0 }}
@@ -130,13 +130,13 @@ export default function NotificationBell() {
             aria-hidden="true"
           >
             {unread > 9 ? '9+' : unread}
-          </motion.span>
+          </m.span>
         )}
       </button>
 
       <AnimatePresence>
         {open && (
-          <motion.div
+          <m.div
             className="bell__panel"
             role="dialog"
             aria-label="Notifications"
@@ -182,7 +182,7 @@ export default function NotificationBell() {
                 ))}
               </ul>
             )}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

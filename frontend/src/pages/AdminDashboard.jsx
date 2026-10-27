@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import PageTransition from '../components/PageTransition';
 import Loader from '../components/Loader';
@@ -48,7 +48,7 @@ export default function AdminDashboard() {
             {/* A shared layoutId lets the underline slide between tabs rather
                 than blinking out of one and into the next. */}
             {active === tab.key && (
-              <motion.span
+              <m.span
                 layoutId="admin-tab-underline"
                 className="admin-tab__underline"
                 transition={{ type: 'spring', stiffness: 420, damping: 34 }}
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
 
       <Suspense fallback={<Loader label="Loading…" />}>
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={active}
             role="tabpanel"
             initial={{ opacity: 0, y: 8 }}
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
             transition={{ duration: DURATION.base, ease: EASE }}
           >
             <Active />
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </Suspense>
     </PageTransition>

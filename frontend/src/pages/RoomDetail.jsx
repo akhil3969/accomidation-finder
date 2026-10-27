@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { bookingApi, favoriteApi, reviewApi, roomApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useAuth } from '../context/AuthContext';
@@ -257,7 +257,7 @@ export default function RoomDetail() {
         <div>
           <div className="row" style={{ gap: '0.4rem', marginBottom: '0.35rem' }}>
             <AnimatePresence mode="wait" initial={false}>
-              <motion.span
+              <m.span
                 key={room.available ? 'free' : 'taken'}
                 className={`badge ${room.available ? 'badge--success' : 'badge--danger'}`}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -266,7 +266,7 @@ export default function RoomDetail() {
                 transition={{ duration: DURATION.fast, ease: EASE }}
               >
                 {room.available ? 'Available now' : 'Currently taken'}
-              </motion.span>
+              </m.span>
             </AnimatePresence>
             <span className="badge badge--neutral">{ROOM_TYPE_LABELS[room.roomType]}</span>
             {room.billsIncluded && <span className="badge badge--info">Bills included</span>}
@@ -279,7 +279,7 @@ export default function RoomDetail() {
         </div>
 
         <div className="row">
-          <motion.button
+          <m.button
             type="button"
             className={`icon-btn ${room.favorite ? 'is-active' : ''}`}
             onClick={handleFavorite}
@@ -288,7 +288,7 @@ export default function RoomDetail() {
             aria-label={room.favorite ? 'Remove from saved' : 'Save this listing'}
           >
             {room.favorite ? '♥' : '♡'}
-          </motion.button>
+          </m.button>
           {isOwner && (
             <Link to={`/dashboard/rooms/${room.id}/edit`} className="btn btn--ghost btn--sm">
               Edit listing
@@ -302,7 +302,7 @@ export default function RoomDetail() {
           <section className="gallery">
             <div className="gallery__main">
               <AnimatePresence mode="wait" initial={false}>
-                <motion.img
+                <m.img
                   key={images[activeImage]}
                   src={images[activeImage]}
                   alt={room.title}
@@ -432,9 +432,8 @@ export default function RoomDetail() {
 
                 <AnimatePresence initial={false}>
                   {reviews.map((item) => (
-                    <motion.div
+                    <m.div
                       key={item.id}
-                      layout="position"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
@@ -457,7 +456,7 @@ export default function RoomDetail() {
                         <div className="small muted">{formatDate(item.createdAt)}</div>
                         <p style={{ margin: '0.25rem 0 0' }}>{item.comment}</p>
                       </div>
-                    </motion.div>
+                    </m.div>
                   ))}
                 </AnimatePresence>
 
@@ -599,7 +598,7 @@ export default function RoomDetail() {
 
                   <AnimatePresence initial={false}>
                     {nights > 0 && (
-                      <motion.div
+                      <m.div
                         className="spec"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -608,7 +607,7 @@ export default function RoomDetail() {
                       >
                         <span>{nights} nights, pro-rated</span>
                         <strong>{formatPricePrecise(estimate)}</strong>
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
 

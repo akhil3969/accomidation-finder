@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { LazyMotion, MotionConfig } from 'framer-motion';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
@@ -11,11 +11,16 @@ import { ConfirmProvider } from './context/ConfirmContext';
 import 'leaflet/dist/leaflet.css';
 import './styles/index.css';
 
+const loadMotionFeatures = () => import('./motion/features').then((module) => module.default);
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* reducedMotion="user" makes every framer-motion animation in the app
         collapse to an instant state change when the operating system asks for
         it, which is the half the CSS media query cannot reach. */}
+    {/* strict: any stray <motion.*> (which would pull the whole library back into
+        the first bundle) throws in development instead of silently costing 30KB. */}
+    <LazyMotion features={loadMotionFeatures} strict>
     <MotionConfig reducedMotion="user">
       {/* Opting in early silences the v7 upgrade warnings React Router logs on
           every page, and startTransition keeps the current page on screen
@@ -34,5 +39,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         </ToastProvider>
       </BrowserRouter>
     </MotionConfig>
+    </LazyMotion>
   </React.StrictMode>,
 );

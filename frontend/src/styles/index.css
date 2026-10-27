@@ -968,10 +968,9 @@ input[type='range'] { min-height: 28px; accent-color: var(--primary); cursor: po
   border: none;
   border-radius: var(--radius);
   overflow: hidden;
-  /* The lift itself is framer-motion's; this only handles the shadow, which
-     motion would have to animate off the compositor. */
-  transition: box-shadow var(--transition), border-color var(--transition);
-  will-change: transform;
+  /* No will-change here: a permanent GPU layer per card costs memory on long
+     lists for no visible gain. */
+  transition: box-shadow var(--transition);
 }
 .room-card:hover { box-shadow: var(--shadow-md); }
 
@@ -1008,7 +1007,6 @@ input[type='range'] { min-height: 28px; accent-color: var(--primary); cursor: po
   background: rgba(255, 255, 255, 0.9);
   color: #1d1d1f;
   border: none;
-  backdrop-filter: blur(8px);
   z-index: 2;
 }
 .room-card__fav:hover { background: #fff; }
@@ -1154,13 +1152,24 @@ input[type='range'] { min-height: 28px; accent-color: var(--primary); cursor: po
   background: var(--text-faint);
   flex-shrink: 0;
 }
-.status-dot.is-live { background: var(--success); animation: pulse 2s ease-out infinite; }
+.status-dot { position: relative; }
+.status-dot.is-live { background: var(--success); }
+/* The pulse is a ring that scales and fades - transform and opacity only, so it
+   runs on the compositor. It used to animate box-shadow, which forced a repaint
+   of the page area every frame, forever, for as long as the tab was open. */
+.status-dot.is-live::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s ease-out infinite;
+}
 .status-dot.is-down { background: var(--warning); }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 var(--success-soft); }
-  70% { box-shadow: 0 0 0 8px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
+  0% { transform: scale(1); opacity: 0.5; }
+  70%, 100% { transform: scale(2.6); opacity: 0; }
 }
 
 /* ---------------------------------------------------------- room detail */
@@ -2152,3 +2161,68 @@ tbody tr:hover { background: var(--surface-2); }
 
 .card--danger { border-color: var(--danger-soft); }
 .card--danger .card__header h3 { color: var(--danger); }
+
+/* ----------------------------------------------------------------------------
+   Opening globe (components/intro). Only transform and opacity animate, so the
+   compositor does the work and the main thread stays free.
+   ------------------------------------------------------------------------- */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  cursor: pointer;
+  transition: opacity 450ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.intro.is-leaving { opacity: 0; pointer-events: none; }
+
+.intro__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+.intro__globe {
+  width: min(72vmin, 560px);
+  aspect-ratio: 1;
+  opacity: 0;              /* GlobeIntro drives opacity and transform per frame */
+  will-change: transform, opacity;
+}
+
+.intro__caption {
+  /* Its own layer above the canvas: a transformed canvas would otherwise paint
+     over in-flow siblings while it zooms. */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 500ms ease, transform 500ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.intro__caption strong { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+.intro__caption span { color: var(--text-muted); font-size: 1.05rem; }
+.intro__stage.is-caption .intro__caption { opacity: 1; transform: none; }
+.intro__stage.is-fade .intro__caption { opacity: 0; transform: translateY(-6px); }
+
+.intro__skip {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  min-height: 40px;
+  padding: 0 1.1rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--surface-3);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.intro__skip:hover { background: var(--border-strong); color: var(--surface); }
+

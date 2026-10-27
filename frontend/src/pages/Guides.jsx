@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { newcomerApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import useDocumentTitle from '../hooks/useDocumentTitle';
@@ -81,7 +81,7 @@ export default function Guides() {
       {categories.map((category) => (
         <section key={category} style={{ marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.05rem' }}>{category}</h2>
-          <motion.div
+          <m.div
             className="guide-grid"
             variants={listVariants}
             initial="initial"
@@ -91,7 +91,7 @@ export default function Guides() {
             {guides
               .filter((guide) => guide.category === category)
               .map((guide) => (
-                <motion.div key={guide.slug} variants={itemVariants} whileHover={{ y: -4 }}>
+                <m.div key={guide.slug} variants={itemVariants} whileHover={{ y: -4 }}>
                   <Link to={`/guides/${guide.slug}`} className="guide-card">
                     <div className="guide-card__icon" aria-hidden="true">
                       {ICON[guide.icon] || '📘'}
@@ -99,9 +99,9 @@ export default function Guides() {
                     <h3>{guide.title}</h3>
                     <p>{guide.summary}</p>
                   </Link>
-                </motion.div>
+                </m.div>
               ))}
-          </motion.div>
+          </m.div>
         </section>
       ))}
     </PageTransition>

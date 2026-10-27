@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useInbox } from '../context/InboxContext';
 import useMediaQuery from '../hooks/useMediaQuery';
@@ -35,7 +35,7 @@ const sheetVariants = {
 function UnreadBadge({ count }) {
   if (!count) return null;
   return (
-    <motion.span
+    <m.span
       /* Keyed on the count so every increment replays the pop. */
       key={count}
       className="nav-badge"
@@ -44,7 +44,7 @@ function UnreadBadge({ count }) {
       transition={{ type: 'spring', stiffness: 520, damping: 20 }}
     >
       {count > 9 ? '9+' : count}
-    </motion.span>
+    </m.span>
   );
 }
 
@@ -150,7 +150,7 @@ export default function Navbar() {
             <AnimatePresence>
               {open && (
                 <>
-                  <motion.button
+                  <m.button
                     key="scrim"
                     type="button"
                     className="nav-scrim"
@@ -162,7 +162,7 @@ export default function Navbar() {
                     exit="exit"
                     onClick={() => setOpen(false)}
                   />
-                  <motion.nav
+                  <m.nav
                     key="sheet"
                     id="primary-navigation"
                     aria-label="Main"
@@ -173,7 +173,7 @@ export default function Navbar() {
                     exit="exit"
                   >
                     {sheet}
-                  </motion.nav>
+                  </m.nav>
                 </>
               )}
             </AnimatePresence>

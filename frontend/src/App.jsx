@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Loader from './components/Loader';
 import VerifyEmailBanner from './components/VerifyEmailBanner';
+import IntroGate from './components/intro/IntroGate';
 import Home from './pages/Home';
 
 /**
@@ -54,6 +55,7 @@ export default function App() {
         Skip to content
       </a>
 
+      <IntroGate />
       <Navbar />
       <VerifyEmailBanner />
       <ScrollToTop pathname={location.pathname} />

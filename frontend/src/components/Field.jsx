@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { DURATION, EASE } from '../motion/tokens';
 
 /**
@@ -40,7 +40,7 @@ export default function Field({ id, label, hint, error, required, children, clas
 
       <AnimatePresence initial={false}>
         {error && (
-          <motion.span
+          <m.span
             key="error"
             id={errorId}
             className="field__error"
@@ -51,7 +51,7 @@ export default function Field({ id, label, hint, error, required, children, clas
             transition={{ duration: DURATION.fast, ease: EASE }}
           >
             {error}
-          </motion.span>
+          </m.span>
         )}
       </AnimatePresence>
     </div>

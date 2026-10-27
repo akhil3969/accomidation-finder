@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { bookingApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -138,10 +138,10 @@ export default function MyBookings() {
         />
       )}
 
-      <motion.div className="stack" variants={listVariants} initial="initial" animate="animate">
+      <m.div className="stack" variants={listVariants} initial="initial" animate="animate">
         <AnimatePresence mode="popLayout" initial={false}>
           {bookings.map((booking) => (
-            <motion.article
+            <m.article
               key={booking.id}
               layout
               variants={itemVariants}
@@ -189,10 +189,10 @@ export default function MyBookings() {
                   )}
                 </div>
               </div>
-            </motion.article>
+            </m.article>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
 
       <Pagination page={result?.page ?? 0} totalPages={result?.totalPages ?? 0} onChange={setPage} />
     </PageTransition>

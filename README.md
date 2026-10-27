@@ -24,6 +24,7 @@ no refresh button.
 
 | | |
 |---|---|
+| 🌍 **Opening globe** | A WebGL globe spins onto Paris and dissolves into the site - once per visit, skippable, off for reduced motion, ~7KB loaded only when it plays |
 | 🔍 **Search & filter** | Full-text search plus city, price range, type, size, furnishing, bills and availability filters, with sorting and pagination |
 | 📡 **Real-time** | New listings, availability flips, booking decisions and chat all stream over `/ws` |
 | 📅 **Booking flow** | Request → landlord accepts/declines → confirmed stay, with overlap detection so two people cannot hold the same dates |
@@ -151,7 +152,8 @@ figures and links out to the official simulator.
 | Frontend | React 18 + Vite 5 | Fast dev server, tiny production bundle |
 | Routing / HTTP | React Router 6, axios | Interceptors attach the JWT and normalise error messages |
 | Map | Leaflet + react-leaflet | No API key, OpenStreetMap tiles |
-| Motion | Framer Motion 11 | Route, list and dialog transitions; honours `prefers-reduced-motion` through `MotionConfig` |
+| Motion | Framer Motion 11 via `LazyMotion` | Small core in the first bundle, animation engine loaded after first paint; honours `prefers-reduced-motion` |
+| Globe | cobe 2 | 5KB WebGL globe for the opening scene |
 | Docs | springdoc-openapi | Swagger UI with a working Authorize button |
 
 ---
@@ -287,6 +289,7 @@ mvn verify          # unit and integration tests; MySqlMigrationIT needs Docker
 
 cd frontend
 npm run lint && npm run build
+npm run preview     # serve the production build on :4173 - use this to judge speed, not the dev server
 ```
 
 GitHub Actions runs all of this on every push and pull request, plus `MySqlMigrationIT`

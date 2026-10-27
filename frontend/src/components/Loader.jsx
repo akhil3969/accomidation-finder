@@ -1,12 +1,12 @@
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { fadeVariants, listVariants } from '../motion/tokens';
 
 export default function Loader({ label = 'Loading...' }) {
   return (
-    <motion.div className="loader" variants={fadeVariants} initial="initial" animate="animate">
+    <m.div className="loader" variants={fadeVariants} initial="initial" animate="animate">
       <div className="spinner" role="progressbar" aria-label={label} />
       <span className="small">{label}</span>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -18,9 +18,9 @@ export default function Loader({ label = 'Loading...' }) {
  */
 export function CardSkeletons({ count = 6 }) {
   return (
-    <motion.div className="room-grid" variants={listVariants} initial="initial" animate="animate">
+    <m.div className="room-grid" variants={listVariants} initial="initial" animate="animate">
       {Array.from({ length: count }, (_, index) => (
-        <motion.div
+        <m.div
           key={index}
           className="skeleton skeleton--card"
           initial={{ opacity: 0 }}
@@ -28,7 +28,7 @@ export function CardSkeletons({ count = 6 }) {
           transition={{ delay: index * 0.04, duration: 0.2 }}
         />
       ))}
-    </motion.div>
+    </m.div>
   );
 }
 

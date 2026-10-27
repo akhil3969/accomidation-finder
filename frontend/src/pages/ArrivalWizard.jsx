@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { newcomerApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -134,7 +134,7 @@ export default function ArrivalWizard() {
           {/* One step leaves before the next arrives, sliding in the direction
               of travel so going Back is visibly going back. */}
           <AnimatePresence mode="wait" custom={direction} initial={false}>
-          <motion.div
+          <m.div
             key={step}
             className="stack"
             custom={direction}
@@ -332,7 +332,7 @@ export default function ArrivalWizard() {
               </div>
             </>
           )}
-          </motion.div>
+          </m.div>
           </AnimatePresence>
         </div>
 

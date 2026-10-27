@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { bookingApi, roomApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -152,7 +152,7 @@ export default function LandlordDashboard() {
               <tbody>
                 <AnimatePresence initial={false}>
                   {requests.map((booking) => (
-                    <motion.tr
+                    <m.tr
                       key={booking.id}
                       layout
                       initial={{ opacity: 0, backgroundColor: 'var(--primary-soft)' }}
@@ -203,7 +203,7 @@ export default function LandlordDashboard() {
                         </button>
                       )}
                     </td>
-                    </motion.tr>
+                    </m.tr>
                   ))}
                 </AnimatePresence>
               </tbody>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { favoriteApi } from '../api/endpoints';
 import { toMessage } from '../api/client';
 import { useToast } from '../context/ToastContext';
@@ -98,13 +98,13 @@ export default function Favorites() {
       )}
 
       {!loading && !error && rooms.length > 0 && (
-        <motion.div className="room-grid" variants={listVariants} initial="initial" animate="animate">
+        <m.div className="room-grid" variants={listVariants} initial="initial" animate="animate">
           <AnimatePresence mode="popLayout" initial={false}>
             {rooms.map((room) => (
               <RoomCard key={room.id} room={room} canFavorite onToggleFavorite={remove} />
             ))}
           </AnimatePresence>
-        </motion.div>
+        </m.div>
       )}
     </PageTransition>
   );

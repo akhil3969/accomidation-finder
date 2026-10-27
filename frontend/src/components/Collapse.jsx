@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'framer-motion';
 import { DURATION, EASE } from '../motion/tokens';
 
 /**
@@ -13,7 +13,7 @@ export default function Collapse({ open, children, className }) {
   return (
     <AnimatePresence initial={false}>
       {open && (
-        <motion.div
+        <m.div
           className={className}
           style={{ overflow: 'hidden' }}
           initial={{ height: 0, opacity: 0 }}
@@ -22,7 +22,7 @@ export default function Collapse({ open, children, className }) {
           transition={{ duration: DURATION.base, ease: EASE }}
         >
           {children}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
