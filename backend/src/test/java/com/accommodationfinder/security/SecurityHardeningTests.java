@@ -35,6 +35,22 @@ class SecurityHardeningTests {
     }
 
     @Test
+    void healthIsPublicButRevealsNothingButUpOrDown() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.components").doesNotExist());
+        mockMvc.perform(get("/actuator/health/readiness"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void noOtherActuatorEndpointIsExposed() throws Exception {
+        mockMvc.perform(get("/actuator/env")).andExpect(status().is4xxClientError());
+        mockMvc.perform(get("/actuator/beans")).andExpect(status().is4xxClientError());
+    }
+
+    @Test
     void malformedJsonDoesNotEchoParserInternals() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

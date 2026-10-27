@@ -14,6 +14,10 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
     show-sql: false
+  # The migrations are MySQL SQL; the in-memory demo builds its schema from the
+  # entities instead (create-drop above). MySQL coverage is MySqlMigrationIT.
+  flyway:
+    enabled: false
   h2:
     console:
       enabled: true

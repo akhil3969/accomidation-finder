@@ -4,6 +4,9 @@ spring:
     url: ${DATABASE_URL}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
+  flyway:
+    # A half-applied migration must stop the deploy, never be skipped.
+    validate-on-migrate: true
   jpa:
     hibernate:
       ddl-auto: validate

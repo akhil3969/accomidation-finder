@@ -8,7 +8,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway owns the schema (db/migration). Hibernate only checks that the
+      # entities still match it, so drift fails at startup on your laptop
+      # instead of in production.
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect

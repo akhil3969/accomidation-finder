@@ -80,7 +80,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/reports/reasons").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/bookings/room/*/ranges").permitAll()
                 .requestMatchers("/ws/**", "/ws-native/**").permitAll()
-                .requestMatchers("/api/public/**", "/actuator/health").permitAll()
+                .requestMatchers("/api/public/**", "/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // --- role gated ---

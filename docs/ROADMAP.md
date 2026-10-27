@@ -200,6 +200,10 @@ The backend work is in 0.3; this is the two screens: request-a-reset and set-a-n
 
 ### 2.1 Flyway migrations — **M**
 
+> **Done.** `db/migration/V1__initial_schema.sql` replaces `database/schema.sql`; dev and prod
+> run Flyway with Hibernate on `validate`. `MySqlMigrationIT` (Testcontainers, MySQL 8)
+> applies the migrations and lets Hibernate validate them in CI. Next schema change: add `V2__...sql`.
+
 `database/schema.sql` and the JPA entities are maintained by hand and can drift. The prod
 profile uses `ddl-auto: validate`, so the first drift is a failed deploy — and there is no
 mechanism at all for changing a live schema without data loss.
@@ -210,10 +214,19 @@ retrofitting Flyway afterwards is genuinely painful.
 
 ### 2.2 Backups — **S**
 
+> **Done** as scripts: `scripts/backup-db.sh` (consistent snapshot, gzip, owner-only file,
+> refuses truncated dumps, optional S3 copy, 30-day retention) and `scripts/restore-db.sh`
+> (refuses non-empty targets). CI runs a backup → restore drill on MySQL 8 on every push.
+> **Still yours:** schedule the backup on the host once it is deployed.
+
 There is no backup story. Automated daily `mysqldump` to object storage with 30-day
 retention, and — this is the part people skip — **actually restore one** to prove it works.
 
 ### 2.3 Error tracking and uptime monitoring — **S**
+
+> **Health done:** `spring-boot-starter-actuator`, `/actuator/health` (+ liveness/readiness),
+> no details, nothing else exposed. **Still to do:** Sentry needs an account and DSN, and
+> UptimeRobot needs a public URL - both after deployment.
 
 Right now a production exception goes to a log file nobody reads. Add Sentry (free tier
 covers this) to both the backend and the React app, plus UptimeRobot pinging a health

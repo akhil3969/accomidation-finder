@@ -21,9 +21,9 @@ services:
     ports:
       - "3306:3306"
     volumes:
+      # The backend creates the tables itself (Flyway) and seeds demo data on an
+      # empty database (dev profile), so MySQL starts empty.
       - mysql-data:/var/lib/mysql
-      # Anything in this folder runs once, on first boot of an empty volume.
-      - ./database:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s

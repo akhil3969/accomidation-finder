@@ -154,10 +154,9 @@ Only do this once the demo profile works. The demo database is wiped on every re
 MySQL keeps your data.
 
 ```powershell
-# load the schema and demo data (asks for your MySQL root password)
-cd C:\path\to\accommodation-finder
-mysql -u root -p < database\schema.sql
-mysql -u root -p < database\seed.sql
+# create an empty database (asks for your MySQL root password).
+# The backend creates the tables and the demo data itself on first start.
+mysql -u root -p -e "CREATE DATABASE accommodation_finder CHARACTER SET utf8mb4"
 
 # start the backend against MySQL
 cd backend
@@ -233,7 +232,12 @@ Adjust the folder name to match what is actually in `C:\Program Files\Microsoft\
 Your password is not `root`. Set `$env:DB_PASSWORD` as shown in Step 6.
 
 **MySQL: `Unknown database 'accommodation_finder'`**
-You skipped `schema.sql`. Run it, then `seed.sql`.
+You skipped the `CREATE DATABASE` line in Step 6. Run it, then start the backend again.
+
+**`Found non-empty schema(s) ... but no schema history table`**
+The database was created before Flyway was added. It only holds demo data: drop it
+(`mysql -u root -p -e "DROP DATABASE accommodation_finder"`), create it again empty,
+and restart the backend.
 
 **Login says "Invalid email or password"**
 Check for a trailing space in the email. Every demo password is exactly `password123`.

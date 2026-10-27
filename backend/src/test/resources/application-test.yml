@@ -4,6 +4,8 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ''
+  flyway:
+    enabled: false        # MySQL-only SQL; see MySqlMigrationIT
   jpa:
     hibernate:
       ddl-auto: create-drop

@@ -1,32 +1,14 @@
 -- =====================================================================
---  Accommodation Finder - MySQL 8 schema
---  Author: Kona Sai Akhil (EPITA Paris)
+--  V1 - initial schema (Flyway)
 --
---  Generated from the JPA entities, which are the source of truth, and
---  verified by starting the app against it with `ddl-auto: validate`.
+--  The schema as it stood when migrations were introduced, generated from
+--  the JPA entities. Never edit this file once it has run anywhere: Flyway
+--  checksums it and refuses to start if it changes. Every later change is a
+--  new file, V2__what_changed.sql, V3__..., applied in order exactly once.
 --
---  The previous hand-written version had drifted badly: it was missing
---  seven tables entirely (aid_parameters, checklist_items,
---  checklist_progress, guide_articles, moderation_actions, reports,
---  room_risk_flags), missing columns on tables it did define
---  (users.verification_status, rooms.housing_zone), and declared the
---  enum columns as VARCHAR where Hibernate 6.4 emits native ENUM. Any
---  of those made the prod profile refuse to start.
---
---  Regenerate after changing an entity:
---    mvn spring-boot:run -Dspring-boot.run.profiles=dev   # ddl-auto: update
---    mysqldump -u root -p --no-data --compact accommodation_finder
---
---  Usage:  mysql -u root -p < database/schema.sql
---          mysql -u root -p < database/seed.sql
+--  Hibernate only validates (ddl-auto: validate); it never alters tables.
 -- =====================================================================
 
-CREATE DATABASE IF NOT EXISTS accommodation_finder
-    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE accommodation_finder;
-
--- Tables are emitted in alphabetical order, so `bookings` is created before the
--- `users` it points at. Deferring the check is what mysqldump itself does.
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- NOTE: the CURRENT_TIMESTAMP defaults below are added on top of what
@@ -43,7 +25,7 @@ CREATE TABLE `aid_parameters` (
   `param_value` decimal(12,2) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_aid_parameters_param_key` (`param_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `bookings` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -65,7 +47,7 @@ CREATE TABLE `bookings` (
   KEY `idx_bookings_status` (`status`),
   CONSTRAINT `FKeg03kra5t9odfw0e171p83jf8` FOREIGN KEY (`tenant_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FKrgoycol97o21kpjodw1qox4nc` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `checklist_items` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -82,7 +64,7 @@ CREATE TABLE `checklist_items` (
   `title` varchar(200) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_checklist_items_item_key` (`item_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `checklist_progress` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -108,7 +90,7 @@ CREATE TABLE `favorites` (
   KEY `FKberjnu7ygmw3btmkhf0chgh1f` (`room_id`),
   CONSTRAINT `FKberjnu7ygmw3btmkhf0chgh1f` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`),
   CONSTRAINT `FKk7du8b8ewipawnnpg76d55fus` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `guide_articles` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -125,7 +107,7 @@ CREATE TABLE `guide_articles` (
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_guide_articles_slug` (`slug`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `messages` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -142,7 +124,7 @@ CREATE TABLE `messages` (
   CONSTRAINT `FK4ui4nnwntodh6wjvck53dbk9m` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FK92hs6y8g4al98ihp4ms6nbxeq` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`),
   CONSTRAINT `FKhdkwfnspwb3s60j27vpg0rpg6` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `moderation_actions` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -211,7 +193,7 @@ CREATE TABLE `reviews` (
   KEY `FKoppowk1pob9qiujo31erx63x1` (`room_id`),
   CONSTRAINT `FKoppowk1pob9qiujo31erx63x1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`),
   CONSTRAINT `FKse5kx11600wtv0jh9jobvrdpi` FOREIGN KEY (`author_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `room_amenities` (
   `room_id` bigint(20) NOT NULL,
@@ -273,7 +255,7 @@ CREATE TABLE `rooms` (
   KEY `idx_rooms_available` (`available`),
   KEY `FKjnuh04e327bnyefv78431g8yx` (`landlord_id`),
   CONSTRAINT `FKjnuh04e327bnyefv78431g8yx` FOREIGN KEY (`landlord_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE `user_tokens` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
@@ -323,6 +305,6 @@ CREATE TABLE `users` (
   `verified_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_users_email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

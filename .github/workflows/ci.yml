@@ -65,3 +65,49 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+
+  backup-restore-drill:
+    name: Backup and restore drill (MySQL 8)
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: drill-only-password
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -pdrill-only-password"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: '3306'
+      DB_USER: root
+      DB_PASSWORD: drill-only-password
+      MYSQL_PWD: drill-only-password
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build a database from the real migrations, with a known row
+        run: |
+          mysql -h127.0.0.1 -uroot -e "CREATE DATABASE drill"
+          mysql -h127.0.0.1 -uroot drill < backend/src/main/resources/db/migration/V1__initial_schema.sql
+          mysql -h127.0.0.1 -uroot drill -e "INSERT INTO users (name, email, password, role, verification_status)
+            VALUES ('Drill User', 'drill@example.com', 'x', 'TENANT', 'NOT_SUBMITTED')"
+
+      - name: Back up
+        run: DB_NAME=drill scripts/backup-db.sh "$RUNNER_TEMP/backups" | tee "$RUNNER_TEMP/backup-path"
+
+      - name: Restore into an empty database and compare
+        run: |
+          backup="$(cat "$RUNNER_TEMP/backup-path")"
+          DB_NAME=drill_restored scripts/restore-db.sh "$backup"
+          tables() { mysql -h127.0.0.1 -uroot -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$1'"; }
+          [ "$(tables drill)" = "$(tables drill_restored)" ] || { echo "table count differs"; exit 1; }
+          email="$(mysql -h127.0.0.1 -uroot -N drill_restored -e "SELECT email FROM users")"
+          [ "$email" = "drill@example.com" ] || { echo "row missing after restore"; exit 1; }
+
+      - name: Refuses to restore over a database that has tables
+        run: |
+          if DB_NAME=drill_restored scripts/restore-db.sh "$(cat "$RUNNER_TEMP/backup-path")"; then
+            echo "restore-db should have refused"; exit 1
+          fi

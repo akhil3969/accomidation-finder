@@ -187,13 +187,18 @@ Open <http://localhost:5173>. Sign in with any of the demo accounts:
 ### Option B — MySQL
 
 ```bash
-# create the schema and load the demo data
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
+# an empty database is all it needs
+mysql -u root -p -e "CREATE DATABASE accommodation_finder CHARACTER SET utf8mb4"
 
 cd backend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
+
+On startup Flyway creates the tables from `backend/src/main/resources/db/migration`,
+and because the database is empty the same demo accounts and listings are seeded.
+
+> Already have a database from before migrations existed? Flyway refuses to touch a
+> schema it did not create. It is dev data: drop the database and let it rebuild.
 
 Connection details come from environment variables (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, …);
 see `backend/.env.example`. The defaults are `localhost:3306`, `root` / `root`.
@@ -262,9 +267,10 @@ accommodation-finder/
 │   ├── src/pages/                    One file per route
 │   ├── src/styles/index.css          Design tokens, light + dark, responsive
 │   └── Dockerfile / nginx.conf
-├── database/
-│   ├── schema.sql                    MySQL 8 DDL (authoritative)
-│   └── seed.sql                      Demo data with real BCrypt hashes
+│   (backend/src/main/resources/db/migration/   Flyway migrations: the schema's history)
+├── scripts/
+│   ├── backup-db.sh                  Compressed, timestamped mysqldump with retention
+│   └── restore-db.sh                 Restore into an empty database (CI drills it on every push)
 ├── docs/
 │   ├── API.md                        Every endpoint, with examples
 │   └── ARCHITECTURE.md               How the pieces fit and why
@@ -277,13 +283,15 @@ accommodation-finder/
 
 ```bash
 cd backend
-mvn verify          # 56 tests: unit, integration (MockMvc + H2) and *IT
+mvn verify          # unit and integration tests; MySqlMigrationIT needs Docker
 
 cd frontend
 npm run lint && npm run build
 ```
 
-GitHub Actions runs all of this on every push and pull request.
+GitHub Actions runs all of this on every push and pull request, plus `MySqlMigrationIT`
+(the migrations against a real MySQL 8 in Docker, with Hibernate validating the result)
+and a backup → drop → restore drill of the two scripts.
 
 The backend suite covers the JWT service (leaked secrets, revocation), the booking rules, a
 concurrency test that fires eight simultaneous booking requests at one room and asserts
@@ -336,8 +344,13 @@ Every setting has a working default; override with environment variables.
 
 ## Deployment notes
 
-- Run with `SPRING_PROFILES_ACTIVE=prod`. That sets `ddl-auto=validate` and disables
-  seeding, so the schema must already exist — apply `database/schema.sql` first.
+- Run with `SPRING_PROFILES_ACTIVE=prod` against an empty MySQL database. Flyway creates
+  and upgrades the schema on startup; Hibernate only validates it, and seeding is off.
+- Point the host's health check at `/actuator/health` (or `/actuator/health/liveness` and
+  `/actuator/health/readiness`). It answers `{"status":"UP"}` and nothing more.
+- Back up daily with `scripts/backup-db.sh` (cron or the host's scheduled jobs), copy the
+  file off the database server with `BACKUP_S3_URI`, and restore one into a scratch
+  database every so often with `scripts/restore-db.sh`.
 - Supply a real `JWT_SECRET`. The app refuses to start if it is missing, shorter than 32
   characters, the public demo value, or the value that was once committed to this repository.
 - Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` for the first boot to create the initial admin

@@ -165,13 +165,18 @@ Chat messages carry a collapse key, so ten messages from one person are one row.
 | Profile | Database | `ddl-auto` | Seeding |
 |---|---|---|---|
 | `demo` (default) | H2 in-memory | `create-drop` | on |
-| `dev` | MySQL | `update` | on (only if empty) |
-| `prod` | from `DATABASE_URL` | `validate` | off |
+| `dev` | MySQL, schema by Flyway | `validate` | on (only if empty) |
+| `prod` | from `DATABASE_URL`, schema by Flyway | `validate` | off |
 
 `demo` exists so the project runs on a machine with nothing installed but a JDK — which
 matters for a portfolio project someone will try in under five minutes. `prod` uses
-`validate` because letting Hibernate alter a production schema is how data goes missing;
-`database/schema.sql` is the source of truth there.
+`validate` because letting Hibernate alter a production schema is how data goes missing.
+
+The schema's source of truth is `db/migration`: `V1__initial_schema.sql` and every
+numbered file after it, each applied once and checksummed. A change to an entity needs a
+new `V<n>__...sql` alongside it; `MySqlMigrationIT` fails in CI if the two disagree. The H2
+profiles (`demo`, `test`) skip Flyway and build the schema from the entities, because the
+migrations are MySQL SQL.
 
 ## Frontend structure
 
